@@ -2,6 +2,8 @@ var http = require('http');
 var express = require('express');
 
 var api = require('./api');
+var widget = require('./widget');
+
 var routes = require('./routes');
 var path = require('path');
 
@@ -17,9 +19,7 @@ var app = express();
 
 // all environments
 app.set('port', process.env.PORT || 3000);
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-//app.use(favicon(__dirname + '/public/favicon.ico'));
+
 app.use(logger('dev'));
 app.use(methodOverride());
 app.use(session({ resave: true,
@@ -28,11 +28,19 @@ app.use(session({ resave: true,
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer());
+
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization, auth-token');    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Credentials', true);    // Set to true if you need the website to include cookies in the requests sent to the API (e.g. in case you use sessions)
+    next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/api/widget', widget);
 app.use('/api', api);
-
-app.use('/birds', routes);
 
 // error handling middleware should be loaded after the loading the routes
 if ('development' == app.get('env')) {
