@@ -12,7 +12,6 @@ router.use(function timeLog(req, res, next) {
   next();
 });
 
-// define the home page route
 router.get('/:id', function(req, res) {
 
       sitesDb.findOne({_id : req.params.id}, function(err, site){
@@ -41,13 +40,7 @@ router.get('/:id', function(req, res) {
             });
           });
         }
-
-
-
       });
-
-
-
 });
 
 module.exports = router;

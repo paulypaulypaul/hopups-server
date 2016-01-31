@@ -14,8 +14,15 @@ rulesEngine.prototype = {
     var deferred = Q.defer();
 
     this.getSessionData(userId, siteId, sessionId).then(function(sessionData){
+      if (!sessionData){
+        console.log('no session data');
+      }
 
       self.userSessionDb.findOne({_id: sessionId}, function(err, userSession){
+
+        if (!userSession){
+          console.log('no user sessions');
+        }
 
         self.getActions(siteId).then(function(actions){
             var clientActions = [];
@@ -24,6 +31,8 @@ rulesEngine.prototype = {
               for (var j = 0; j < actions[i].segments.length; j++){
                 segmentCriteriaMet.push(self.segmentCriteriaMet(actions[i].segments[j], sessionData));
               }
+
+              console.log('segmentCriteriaMet?', segmentCriteriaMet.indexOf(false) )
 
               if (segmentCriteriaMet.indexOf(false) < 0){
 
