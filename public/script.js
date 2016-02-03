@@ -101,7 +101,16 @@ $( document ).ready(function() {
       $('li.last-menu').html(number);
       $('#small-links-list').html(number);
       $('#phoneNo').html(number);
-    }
+    };
+
+    var attachHTML = function(item){
+      $.get( item.location , function( data ) {
+        $('body').append(data);
+        for (var j = 0; j < item.actionEvents.length; j++){
+          wireEvents(item.actionEvents[j])
+        }
+      });
+    };
 
     var wireEvents = function(itemToWire, parent){
       $(itemToWire.selector).each(function() {
@@ -154,16 +163,15 @@ $( document ).ready(function() {
               for (var i = 0; i < events.length; i++){
 
                 if (events[i].response === 'html'){
-                  $.get( events[i].location , function( data ) {
-                    $('body').append(data);
-                  });
+
+                  attachHTML(events[i]);
+
                 } else if (events[i].response === 'template'){
-                 var justTextModal = nanoModal('<iframe src="' + events[i].location + '?action=' + item.id + '" width="500" height="400" frameBorder="0"></iframe>');
-                 justTextModal.show();
+                  var justTextModal = nanoModal('<iframe src="' + events[i].location + '?action=' + item.id + '" width="500" height="400" frameBorder="0"></iframe>');
+                  justTextModal.show();
+                  $( "body" ).trigger( "eventfired", [item] );
+                }
 
-                 $( "body" ).trigger( "eventfired", [item] );
-
-               }
 
               }
 
@@ -172,7 +180,7 @@ $( document ).ready(function() {
             });
           });
       });
-    }
+    };
 
     /*var wireEvent = function(itemToWire){
       var item = itemToWire;

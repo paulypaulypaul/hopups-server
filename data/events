@@ -1,4 +1,4 @@
 {"siteId":"123","page":"*","selector":"h1","event":"click","message":"title clicked","tag":"title","_id":"2jsmvMiG9GSOSeOY"}
 {"siteId":"123","page":"*","selector":"body","event":"initialpageload","message":"initialpageload","_id":"JT7qCBY6TCVagjx4"}
 {"siteId":"123","page":"*","selector":"body","event":"eventfired","message":"eventfired","_id":"yza6Yvbof5jiSD2b"}
-{"siteId":"123","page":"*","selector":"#applynow","event":"click","message":"apply now cicked","_id":"zza6Yvbof8kiFD4f"}
+{"siteId":"123","page":"*","selector":"#signup","event":"click","message":"button cicked","_id":"zza6Yvbof8kiFD4f"}

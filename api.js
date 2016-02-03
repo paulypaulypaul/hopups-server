@@ -11,6 +11,8 @@ var eventsDb = new Datastore({ filename: 'data/events', autoload: true });
 var segmentsDb = new Datastore({ filename: 'data/segments', autoload: true });
 var actionsDb = new Datastore({ filename: 'data/actions', autoload: true });
 var sessionDataDb = new Datastore({ filename: 'data/sessionData', autoload: true });
+sessionDataDb.persistence.setAutocompactionInterval(5);
+
 
 var UserManager = require('./usermanager');
 var userManager = new UserManager(siteUserDb, userSessionDb);
@@ -53,6 +55,7 @@ router.post('/data/', function(req, res) {
 
       var sessionData = {
         "type":   req.body.type,
+        "datetime": new Date(),
 
         "userId": user._id,
         "sessionId" : user.currentSessionId,

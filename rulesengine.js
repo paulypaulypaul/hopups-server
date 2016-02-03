@@ -27,12 +27,13 @@ rulesEngine.prototype = {
         self.getActions(siteId).then(function(actions){
             var clientActions = [];
             for (var i = 0; i < actions.length; i++){
+
               var segmentCriteriaMet = [];
               for (var j = 0; j < actions[i].segments.length; j++){
                 segmentCriteriaMet.push(self.segmentCriteriaMet(actions[i].segments[j], sessionData));
               }
 
-              console.log('segmentCriteriaMet?', segmentCriteriaMet.indexOf(false) )
+              console.log('segmentCriteriaMet', segmentCriteriaMet, segmentCriteriaMet.indexOf(false) )
 
               if (segmentCriteriaMet.indexOf(false) < 0){
 
@@ -45,6 +46,7 @@ rulesEngine.prototype = {
                 }
 
               }
+
             }
 
             self.userSessionDb.update({_id: sessionId}, userSession, function(err, userSession){
@@ -115,43 +117,52 @@ rulesEngine.prototype = {
   getActions : function(siteId){
     var self = this;
     var deferred = Q.defer();
-    //get the session data for the user and siteId
-    this.actionsDb.find({siteId : siteId}, function(err, actions){
 
-      //console.log('actionEntries', actionEntries);
+    //get the session data for the user and siteId
+    this.actionsDb.find({siteId : siteId, active: true}, function(err, actions){
 
       //get a list of segment ids we need from the actions
+      var promises = [];
       var segmentIds = [];
       for (var i = 0; i < actions.length; i++){
-        for (var j = 0; j < actions[i].segments.length; j++){
-          if (segmentIds.indexOf(actions[i].segments[j]) < 0){
-            segmentIds.push(actions[i].segments[j]);
-          }
-        }
+        promises.push(self.replaceActionSegmentIdsWithSegments(actions[i]));
       }
 
-      //console.log('segmentIds', segmentIds);
+      Q.all(promises).then(function(actions){
 
-      self.segmentsDb.find({_id : { $in: segmentIds }}, function(err, segments){
-
+        var promises = [];
         for (var i = 0; i < actions.length; i++){
-          for (var j = 0; j < actions[i].segments.length; j++){
-            var segmentId = actions[i].segments[j];
-            for (var k = 0; k < segments.length; k++){
-              if (segmentId === segments[k]._id){
-                actions[i].segments[j] = segments[k]
-              }
-            }
-          }
+          promises.push(self.replaceActionEventIdsWithEvents(actions[i]));
         }
 
-        deferred.resolve(actions);
+        Q.all(promises).then(function(actions){
+          console.log('actions to return : ', actions);
+          deferred.resolve(actions);
+        });
 
       });
 
     });
     return deferred.promise;
-  }
+  },
+  replaceActionSegmentIdsWithSegments : function(action){
+    var deferred = Q.defer();
+    this.segmentsDb.find({_id : { $in: action.segments }}, function(err, segments){
+      //replace he segment ids array with the proper segment object
+      action.segments = segments;
+      deferred.resolve(action);
+    });
+    return deferred.promise;
+  },
+  replaceActionEventIdsWithEvents : function(action){
+    var deferred = Q.defer();
+    this.eventsDb.find({_id : { $in: action.actionEvents }}, function(err, events){
+      //replace he segment ids array with the proper segment object
+      action.actionEvents = events;
+      deferred.resolve(action);
+    });
+    return deferred.promise;
+  },
 };
 
 module.exports = rulesEngine;
