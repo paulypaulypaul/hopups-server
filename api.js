@@ -27,62 +27,59 @@ router.use(function timeLog(req, res, next) {
   next();
 });
 
-//this is for assigning phone numbers - we still want to update even if no data is sent
-//may merge in future
 router.post('/syncuser', function(req, res) {
   var payloadUserId = req.body.userId || 'none';
   var siteId = req.body.siteId;
+  var dataQ = req.body.dataQ;
 
   userManager.findOrCreateUserById(payloadUserId, siteId).then(function(user){
 
-    user.lastActive = new Date().getTime();
+      console.log(user);
 
-    siteUserDb.update({_id : user._id, siteId : siteId + ''}, user, { upsert: true, returnUpdatedDocs: true }, function(err, numUpdated, user){
-      //force array at this point as new items are single but updated items come back in array
-      user = [].concat(user)
-      res.send(user[0]);
-    });
-  });
+      for (var i = 0 ; i < dataQ.length; i++){
+        var dataItem = dataQ[i];
+        var sessionData = {
+          "type"      : dataItem.type,
+          "datetime"  : new Date(),
 
-});
+          "userId"    : user._id,
+          "sessionId" : user.currentSessionId,
+          "siteId"    : siteId,
+          "eventId"   : dataItem.event._id,
 
-router.post('/data/', function(req, res) {
-  var payloadUserId = req.body.userId || 'none';
-  var siteId = req.body.siteId;
-
-  //if we have a users update the last active time or create a user
-  siteUserDb.findOne({_id : payloadUserId, siteId : siteId}, function(err, user){
-
-      var sessionData = {
-        "type":   req.body.type,
-        "datetime": new Date(),
-
-        "userId": user._id,
-        "sessionId" : user.currentSessionId,
-        "siteId": req.body.siteId,
-        "eventId":  req.body.event._id,
-
-        "context":req.body.context
+          "context"   : dataItem.context
+        }
+        //insert the entry in the session data table
+        sessionDataDb.insert(sessionData);
       }
 
-      //insert the entry in the session data table
-      sessionDataDb.insert(sessionData);
+      if (dataQ.length > 0){
+        //user has acted to set last action to now
+        userManager.resetLastActive(user).then(function(){
 
-      var dateTime = new Date().getTime();
-      //update user last active to now
-      user.lastActive = dateTime;
+          //should we fire any events on the client
+          rulesEngine.getClientActions(user).then(function(events){
+            res.send({
+              'user': user,
+              'events': events
+            });
+          });
 
-      siteUserDb.update({_id : user._id, siteId : siteId}, user, { upsert: true }, function(err, numUpdated){
-          //res.send({'done': true});
-      });
+        });
 
-      //should we fire any events on the client
-      rulesEngine.getClientActions(user._id, user.currentSessionId, siteId).then(function(events){
-        res.send({'events': events});
-      });
+
+      } else {
+        //we still check if we should fire events on the client
+        //as some events are not prompted by user actions but, for instance, by lack of user action - inactive action.
+        //should we fire any events on the client
+        rulesEngine.getClientActions(user).then(function(events){
+          res.send({
+            'user': user,
+            'events': events
+          });
+        });
+      }
   });
-
 });
-
 
 module.exports = router;

@@ -23,6 +23,7 @@ $( document ).ready(function() {
   var config = [%CONFIG%]
   var domain = [%DOMAIN%];
 
+  var dataQ = [];
 
     var events = config.events;
     var eventsToUse = [];
@@ -50,7 +51,7 @@ $( document ).ready(function() {
         this.data[this.name] = value;
       },
       getFromSession: function(){
-        if (localStorage[this.name]){
+        if (localStorage[this.name] && localStorage[this.name] !== 'undefined'){
           this.data = JSON.parse(localStorage[this.name]);
         } else {
           this.data = {};
@@ -91,6 +92,7 @@ $( document ).ready(function() {
     sessionData.getFromSession();
 
     sessionData.data.lastActive = new Date().getTime();
+
 
     new Fingerprint2().get(function(result){
       sessionData.setBfp(result);
@@ -151,6 +153,9 @@ $( document ).ready(function() {
               }
             };
 
+            dataQ.push(data);
+
+            /*
             $.ajax({
               contentType: 'application/json; charset=utf-8',
               dataType: 'json',
@@ -158,6 +163,7 @@ $( document ).ready(function() {
               url: "http://" + domain + "/api/data/",
               data: JSON.stringify(data)
             }).done(function(response) {
+
               var events = response.events;
 
               for (var i = 0; i < events.length; i++){
@@ -172,12 +178,13 @@ $( document ).ready(function() {
                   $( "body" ).trigger( "eventfired", [item] );
                 }
 
-
               }
 
               //set local session data to now - this will get overwritten when the server version comes down
               sessionData.setLastActive(new Date().getTime())
             });
+            */
+
           });
       });
     };
@@ -407,9 +414,14 @@ $( document ).ready(function() {
       }
       syncing = true;
 
+      var currentDataQ = dataQ.concat();
+
+      dataQ = [];
+
       var data = {
         userId: 'none',
-        siteId: siteId
+        siteId: siteId,
+        dataQ: currentDataQ
       }
 
       if (sessionData.data){
@@ -422,7 +434,10 @@ $( document ).ready(function() {
         type: "POST",
         url: "http://" + domain + "/api/syncuser/",
         data: JSON.stringify(data)
-      }).done(function(user) {
+      }).done(function(response) {
+
+        var user = response.user;
+        var events = response.events;
 
         sessionData.data = user;
         sessionData.persistToSession();
@@ -444,6 +459,23 @@ $( document ).ready(function() {
 
         updatePhoneNumber(user.phoneNo);
         syncing = false;
+
+        for (var i = 0; i < events.length; i++){
+
+          if (events[i].response === 'html'){
+            attachHTML(events[i]);
+
+          } else if (events[i].response === 'template'){
+            var justTextModal = nanoModal('<iframe src="' + events[i].location + '?action=' + item.id + '" width="500" height="400" frameBorder="0"></iframe>');
+            justTextModal.show();
+            $( "body" ).trigger( "eventfired", [item] );
+          }
+
+        }
+
+        //set local session data to now - this will get overwritten when the server version comes down
+        sessionData.setLastActive(new Date().getTime())
+
 
       });
     }

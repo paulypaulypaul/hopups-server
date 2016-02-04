@@ -9,38 +9,43 @@ var rulesEngine = function (eventsDb, segmentsDb, actionsDb, sessionDataDb, user
 };
 
 rulesEngine.prototype = {
-  getClientActions : function(userId, sessionId, siteId){
+  getClientActions : function(user){
     var self = this;
+
     var deferred = Q.defer();
 
-    this.getSessionData(userId, siteId, sessionId).then(function(sessionData){
-      if (!sessionData){
-        console.log('no session data');
-      }
+    this.getSessionData(user).then(function(sessionData){
 
-      self.userSessionDb.findOne({_id: sessionId}, function(err, userSession){
+      //console.log('session data', sessionData);
+
+      self.userSessionDb.findOne({_id: user.currentSessionId}, function(err, userSession){
 
         if (!userSession){
-          console.log('no user sessions');
+          //console.log('no user sessions');
+        } else {
+          //console.log('userSession', userSession);
         }
 
-        self.getActions(siteId).then(function(actions){
+        self.getActions(user.siteId).then(function(actions){
+
+            console.log('actions', actions);
+
             var clientActions = [];
             for (var i = 0; i < actions.length; i++){
 
               var segmentCriteriaMet = [];
               for (var j = 0; j < actions[i].segments.length; j++){
-                segmentCriteriaMet.push(self.segmentCriteriaMet(actions[i].segments[j], sessionData));
+                segmentCriteriaMet.push(self.segmentCriteriaMet(actions[i].segments[j], sessionData, user));
               }
 
-              console.log('segmentCriteriaMet', segmentCriteriaMet, segmentCriteriaMet.indexOf(false) )
+              //console.log('segmentCriteriaMet', segmentCriteriaMet, segmentCriteriaMet.indexOf(false), segmentCriteriaMet.indexOf(false) < 0 )
 
               if (segmentCriteriaMet.indexOf(false) < 0){
 
                 //check if action has been performed for this session.
-                console.log(userSession, userSession.completedActions, actions[i]._id);
+                //console.log('yo', userSession);
 
-                if (userSession.completedActions.indexOf(actions[i]._id) < 0){
+                if (userSession && userSession.completedActions.indexOf(actions[i]._id) < 0){
                   userSession.completedActions.push(actions[i]._id);
                   clientActions.push(actions[i]);
                 }
@@ -49,7 +54,9 @@ rulesEngine.prototype = {
 
             }
 
-            self.userSessionDb.update({_id: sessionId}, userSession, function(err, userSession){
+            console.log('clientActions', clientActions);
+
+            self.userSessionDb.update({_id: user.currentSessionId}, userSession, function(err, userSession){
               deferred.resolve(clientActions);
             });
 
@@ -58,7 +65,7 @@ rulesEngine.prototype = {
     });
     return deferred.promise;
   },
-  segmentCriteriaMet: function(segment, sessionData){
+  segmentCriteriaMet: function(segment, sessionData, user){
     var tags = {}
 
     for (var i = 0; i < sessionData.length; i++){
@@ -74,17 +81,21 @@ rulesEngine.prototype = {
     if (segment.listen == 'interest'){
       return tags[segment.tag] >= segment.threshold;
     } else if  (segment.listen == 'inactive'){
-      //test if user has been inactive over the threshold
-      return true;
+
+      var now = new Date()
+      var lastActiveThreshold = now.setSeconds(now.getSeconds() - segment.threshold);
+
+      console.log('user.lastActive < lastActiveThreshold', user.lastActive, lastActiveThreshold, user.lastActive < lastActiveThreshold)
+      return user.lastActive < lastActiveThreshold;
     }
 
   },
-  getSessionData : function(userId, siteId, sessionId){
+  getSessionData : function(user){
     var self = this;
     var deferred = Q.defer();
     //get the session data for the user and siteId
-    this.sessionDataDb.find({userId : userId, siteId : siteId, sessionId: sessionId}, function(err, sessionData){
-
+    this.sessionDataDb.find({userId : user._id, siteId : user.siteId, sessionId: user.currentSessionId}, function(err, sessionData){
+      //console.log('sessionData', sessionData)
       var eventIds = [];
       for (var i = 0; i < sessionData.length; i++){
         if (eventIds.indexOf(sessionData[i].eventId) < 0){
@@ -136,7 +147,7 @@ rulesEngine.prototype = {
         }
 
         Q.all(promises).then(function(actions){
-          console.log('actions to return : ', actions);
+          //console.log('actions to return : ', actions);
           deferred.resolve(actions);
         });
 

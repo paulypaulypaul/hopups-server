@@ -15,15 +15,17 @@ usermanager.prototype = {
       if (!user){
         self.createNewUser(siteId).then(function(user){
           deferred.resolve(user);
-        })
+        });
       } else {
-        //we have a user//now we check if the session is 'old' and create a new one if needed
+        //we have a user
+        //now we check if the session is 'old' and create a new one if needed
         self.userSessionDb.findOne({_id: user.currentSessionId}, function(err, userSession){
+          //hard coded hour session - obs parametise
           var nowMinusHour = new Date();
           nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 60);
 
           if (!userSession || !userSession.date || userSession.date < nowMinusHour){
-              self.userSessionDb.insert({"completedActions":[], "date": new Date()}, function(err, userSession){
+            self.userSessionDb.insert({"completedActions":[], "date": new Date()}, function(err, userSession){
               user.currentSessionId = userSession._id;
               self.update(user).then(function(user){
                 deferred.resolve(user);
@@ -61,7 +63,18 @@ usermanager.prototype = {
       self.siteUserDb.insert(user, function(err, user){
         deferred.resolve(user);
       })
+    });                                                          // Number Families - By Georgina Harland.
+    return deferred.promise;                                     //  3 + 6 = 9    6 + 3 = 9
+  },
+  resetLastActive: function(user){                               //   9 - 3 = 6   9 - 6 = 3
+    var deferred = Q.defer();
+
+    user.lastActive = new Date().getTime();
+
+    this.update(user).then(function(user){
+      deferred.resolve(user);
     });
+
     return deferred.promise;
   }
 
