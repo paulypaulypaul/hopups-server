@@ -3,6 +3,7 @@ var express = require('express');
 
 var api = require('./api');
 var widget = require('./widget');
+var admin = require('./admin');
 
 var routes = require('./routes');
 var path = require('path');
@@ -39,8 +40,9 @@ app.use(function (req, res, next) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api/widget', widget);
 app.use('/api', api);
+app.use('/api/widget', widget);
+app.use('/api/admin', admin);
 
 // error handling middleware should be loaded after the loading the routes
 if ('development' == app.get('env')) {
