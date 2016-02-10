@@ -2,9 +2,8 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 
-var Datastore = require('nedb');
-var sitesDb = new Datastore({ filename: 'data/sites', autoload: true });
-var eventsDb = new Datastore({ filename: 'data/events', autoload: true });
+var Site = require('./models/site');
+var Event = require('./models/event');
 
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
@@ -14,7 +13,7 @@ router.use(function timeLog(req, res, next) {
 
 router.get('/:id', function(req, res) {
 
-      sitesDb.findOne({_id : req.params.id}, function(err, site){
+      Site.findOne({_id : req.params.id}, function(err, site){
         res.setHeader('Content-Type', 'application/json');
 
         if (!site){
@@ -28,7 +27,7 @@ router.get('/:id', function(req, res) {
               return console.log(err);
             }
 
-            eventsDb.find({siteId : site._id}, function(err, events){
+            Event.find({siteId : site._id}, function(err, events){
 
               config.events = events;
 

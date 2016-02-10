@@ -93,87 +93,31 @@ rulesEngine.prototype = {
   getSessionData : function(user){
     var self = this;
     var deferred = Q.defer();
-    //get the session data for the user and siteId
-    this.sessionDataDb.find({userId : user._id, siteId : user.siteId, sessionId: user.currentSessionId}, function(err, sessionData){
-      //console.log('sessionData', sessionData)
-      var eventIds = [];
-      for (var i = 0; i < sessionData.length; i++){
-        if (eventIds.indexOf(sessionData[i].eventId) < 0){
-          eventIds.push(sessionData[i].eventId);
-        }
-      }
 
-      self.eventsDb.find({_id : { $in: eventIds }}, function(err, events){
+    this.sessionDataDb
+        .find({userId : user._id, siteId : user.siteId, sessionId: user.currentSessionId})
+        .populate('event')
+        .exec(function(err, sessionData){
+            deferred.resolve(sessionData);
+        });
 
-        // console.log('events', events);
-        for (var i = 0; i < sessionData.length; i++){
-          var eventId = sessionData[i].eventId;
-          for (var j = 0; j < events.length; j++){
-            if (eventId === events[j]._id){
-              //we add a new proprty to the sesion data item here so we have the event details.
-              sessionData[i].event = events[j];
-            }
-          }
-        }
-
-        deferred.resolve(sessionData);
-
-      });
-
-    });
     return deferred.promise;
   },
-
   //This method is only used as we havn't got a relation data store yet
   getActions : function(siteId){
     var self = this;
     var deferred = Q.defer();
 
-    //get the session data for the user and siteId
-    this.actionsDb.find({siteId : siteId, active: true}, function(err, actions){
-
-      //get a list of segment ids we need from the actions
-      var promises = [];
-      var segmentIds = [];
-      for (var i = 0; i < actions.length; i++){
-        promises.push(self.replaceActionSegmentIdsWithSegments(actions[i]));
-      }
-
-      Q.all(promises).then(function(actions){
-
-        var promises = [];
-        for (var i = 0; i < actions.length; i++){
-          promises.push(self.replaceActionEventIdsWithEvents(actions[i]));
-        }
-
-        Q.all(promises).then(function(actions){
-          //console.log('actions to return : ', actions);
-          deferred.resolve(actions);
+    this.actionsDb
+        .find({siteId : siteId})
+        .populate('segments')
+        .populate('actionEvents')
+        .exec(function(err, actions){
+            deferred.resolve(actions);
         });
 
-      });
-
-    });
     return deferred.promise;
-  },
-  replaceActionSegmentIdsWithSegments : function(action){
-    var deferred = Q.defer();
-    this.segmentsDb.find({_id : { $in: action.segments }}, function(err, segments){
-      //replace he segment ids array with the proper segment object
-      action.segments = segments;
-      deferred.resolve(action);
-    });
-    return deferred.promise;
-  },
-  replaceActionEventIdsWithEvents : function(action){
-    var deferred = Q.defer();
-    this.eventsDb.find({_id : { $in: action.actionEvents }}, function(err, events){
-      //replace he segment ids array with the proper segment object
-      action.actionEvents = events;
-      deferred.resolve(action);
-    });
-    return deferred.promise;
-  },
+  }
 };
 
 module.exports = rulesEngine;

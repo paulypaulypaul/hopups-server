@@ -1,17 +1,18 @@
 var http = require('http');
 var express = require('express');
 
+var mongoose   = require('mongoose');
+mongoose.connect('mongodb://localhost/hopups');
+
 var api = require('./api');
 var widget = require('./widget');
 var admin = require('./admin');
 
-var routes = require('./routes');
 var path = require('path');
 
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var methodOverride = require('method-override');
-var session = require('express-session');
 var bodyParser = require('body-parser');
 var multer = require('multer');
 var errorHandler = require('errorhandler');
@@ -23,9 +24,6 @@ app.set('port', process.env.PORT || 3000);
 
 app.use(logger('dev'));
 app.use(methodOverride());
-app.use(session({ resave: true,
-                  saveUninitialized: true,
-                  secret: 'uwotm8' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer());

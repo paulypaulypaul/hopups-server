@@ -1,2 +1,2 @@
 {"siteId":"123","page":"*","listen":"interest","tag":"title","threshold":3,"_id":"CPOwX4RuYnRw4fD2"}
-{"siteId":"123","page":"*","listen":"inactive","threshold":10,"_id":"q25er3Ou1kjf5LcL"}
+{"siteId":"123","page":"*","listen":"inactive","threshold":"60","_id":"q25er3Ou1kjf5LcL"}
