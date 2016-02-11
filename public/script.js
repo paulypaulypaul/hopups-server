@@ -106,12 +106,21 @@ $( document ).ready(function() {
     };
 
     var attachHTML = function(item){
-      $.get( item.location , function( data ) {
-        $('body').append(data);
+      if (item.responsedatafrom === 'code'){
+        $('body').append(item.responsedata);
+        //add any events to the new html weve added
         for (var j = 0; j < item.actionEvents.length; j++){
-          wireEvents(item.actionEvents[j])
+          wireEvents(item.actionEvents[j]);
         }
-      });
+      } else if (item.responsedatafrom === 'uri'){
+        $.get( item.responsedatalocation , function( data ) {
+          $('body').append(data);
+          //add any events to the new html weve added
+          for (var j = 0; j < item.actionEvents.length; j++){
+            wireEvents(item.actionEvents[j])
+          }
+        });
+      }
     };
 
     var wireEvents = function(itemToWire, parent){
