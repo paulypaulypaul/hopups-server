@@ -1,5 +1,0 @@
-{"siteId":"123","page":"*","selector":"h1","event":"click","message":"title clicked","tag":"title","_id":"2jsmvMiG9GSOSeOY","dataFrom":".products"}
-{"siteId":"123","page":"*","selector":"body","event":"initialpageload","message":"initialpageload","_id":"JT7qCBY6TCVagjx4"}
-{"siteId":"123","active":false,"name":"Interest then Inactive","type":"and","page":"*","response":"template","location":"http://numero-ph.thisisnumero.internal:5052/template.html","multiPage":true,"multiSession":false,"segments":["q25er3Ou1kjf5LcL"],"actionEvents":["zza6Yvbof8kiFD4f"],"_id":"iHYkVK1xCGabndEV"}
-{"siteId":"123","page":"*","selector":"body","event":"eventfired","message":"eventfired","_id":"yza6Yvbof5jiSD2b"}
-{"siteId":"123","page":"*","selector":"#signup","event":"click","message":"button cicked","_id":"zza6Yvbof8kiFD4f"}
