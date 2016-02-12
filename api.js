@@ -1,15 +1,6 @@
 var express = require('express');
 var router = express.Router();
 
-var Datastore = require('nedb');
-var siteUserDb = new Datastore({ filename: 'data/siteUser', autoload: true });
-var userSessionDb = new Datastore({ filename: 'data/userSession', autoload: true });
-var eventsDb = new Datastore({ filename: 'data/events', autoload: true });
-var segmentsDb = new Datastore({ filename: 'data/segments', autoload: true });
-var actionsDb = new Datastore({ filename: 'data/actions', autoload: true });
-var sessionDataDb = new Datastore({ filename: 'data/sessionData', autoload: true });
-sessionDataDb.persistence.setAutocompactionInterval(5);
-
 var mongoose   = require('mongoose');
 var Event = require('./models/event');
 var Segment = require('./models/segment');
@@ -22,7 +13,7 @@ var UserManager = require('./usermanager');
 var userManager = new UserManager(SiteUser, UserSession);
 
 var RulesEngine = require('./rulesengine');
-var rulesEngine = new RulesEngine(Event, Segment, Action, SessionData, UserSession);
+var rulesEngine = new RulesEngine();
 
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {

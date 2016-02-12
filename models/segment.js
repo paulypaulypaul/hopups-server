@@ -6,7 +6,7 @@ var Schema       = mongoose.Schema;
 
 var SegmentSchema = new Schema({
         name: String,
-        siteId: String,
+        siteId: { type: Schema.Types.ObjectId, ref: 'Site' },
         page: String,
         listen: String,
         tag: String,
