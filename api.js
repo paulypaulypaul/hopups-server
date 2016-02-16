@@ -40,10 +40,13 @@ router.post('/syncuser', function(req, res) {
           "userId"    : user._id,
           "sessionId" : user.currentSessionId,
           "siteId"    : siteId,
-          "event"   : dataItem.event._id,
 
           "context"   : dataItem.context
         });
+
+        if (dataItem.event && dataItem.event._id){
+          sessionData.event = dataItem.event._id;
+        }
 
         //insert the entry in the session data table
         sessionData.save(function(err, sessionData) {

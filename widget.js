@@ -31,6 +31,16 @@ router.get('/:id', function(req, res) {
 
               config.events = events;
 
+
+/*              config.events.push({
+                "siteId": site._id,
+                "page":"*",
+                "selector":"body",
+                "event":"eventfired",
+                "message":"eventfired"
+                })
+*/
+
               data = data.replace(/\[%SITEID%\]/gi, "'" + site._id + "';");
               data = data.replace(/\[%CONFIG%\]/gi, JSON.stringify(config));
               data = data.replace(/\[%DOMAIN%\]/gi, "'numero-ph.thisisnumero.internal:3000'");

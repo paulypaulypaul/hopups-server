@@ -3,17 +3,19 @@ var Q = require('q');
 var actionsGetter = function (rulesEngineData) {
   this.actions = rulesEngineData.actions;
   this.sessionData = rulesEngineData.sessionData;
+  this.currentUserSession = rulesEngineData.currentUserSession;
   this.userSession = rulesEngineData.userSession;
+  this.hopups = rulesEngineData.hopups;
   this.user = rulesEngineData.user;
 };
 
 actionsGetter.prototype = {
-  getActions: function(){
+  getHopupsToPerform: function(){
     var self = this;
     var deferred = Q.defer();
-    this.checkActions().then(function(actions){
-      self.filterPerformedActions(actions).then(function(actions){
-        deferred.resolve(actions);
+    this.checkActions().then(function(hopups){
+      self.filterPerformedHopups(hopups).then(function(hopups){
+        deferred.resolve(hopups);
       });
     });
     return deferred.promise;
@@ -25,28 +27,32 @@ actionsGetter.prototype = {
     var clientActions = [];
     var promises = [];
 
-    for (var i = 0; i < this.actions.length; i++){
-      promises.push(this.checkAction(this.actions[i]))
+    //for (var i = 0; i < this.actions.length; i++){
+    //  promises.push(this.checkAction(this.actions[i]))
+    //}
+
+    for (var i = 0; i < this.hopups.length; i++){
+      promises.push(this.checkAction(this.hopups[i]))
     }
 
-    Q.all(promises).then(function(actions){
-      deferred.resolve(actions);
+    Q.all(promises).then(function(hopups){
+      deferred.resolve(hopups);
     });
 
     return deferred.promise;
   },
-  checkAction: function(action){
+  checkAction: function(hopup){
     var deferred = Q.defer();
     var segmentCriteriaMet = [];
     var promises = [];
 
-    for (var j = 0; j < action.segments.length; j++){
-      promises.push(this.checkIfSegmentCriteriaMet(action.segments[j], this.user));
+    for (var j = 0; j < hopup.segments.length; j++){
+      promises.push(this.checkIfSegmentCriteriaMet(hopup.segments[j], this.user));
     }
 
     Q.all(promises).then(function(segmentCriteriaMet){
       if (segmentCriteriaMet.length > 0 && segmentCriteriaMet.indexOf(false) < 0){
-        deferred.resolve(action);
+        deferred.resolve(hopup);
       } else {
         deferred.resolve();
       }
@@ -57,19 +63,19 @@ actionsGetter.prototype = {
   checkIfSegmentCriteriaMet: function(segment, user){
     return Q(this.plugins[segment.listen](this.sessionData, segment, user));
   },
-  filterPerformedActions: function(actions){
+  filterPerformedHopups: function(hopups){
     var deferred = Q.defer();
-    var userSession = this.userSession;
-    var clientActions = [];
+    var userSession = this.currentUserSession;
+    var clientHopups = [];
 
-    for (var i = 0; i < actions.length; i++){
+    for (var i = 0; i < hopups.length; i++){
       //we have to check for undefineds here
-      if (actions[i] && userSession.completedActions.indexOf(actions[i]._id) < 0){
-          clientActions.push(actions[i]);
+      if (hopups[i] && userSession.completedHopups.indexOf(hopups[i]._id) < 0){
+          clientHopups.push(hopups[i]);
       }
     }
 
-    deferred.resolve(clientActions);
+    deferred.resolve(clientHopups);
     return deferred.promise;
   },
   plugins : {
@@ -78,11 +84,14 @@ actionsGetter.prototype = {
       var tags = {}
 
       for (var i = 0; i < sessionData.length; i++){
-        var tag = sessionData[i].event.tag;
-        if (!tags[tag]){
-          tags[tag] = 0;
+        //some session data events dont have tags - we need to properly devide thiese up - this for now
+        if (sessionData[i].event){
+          var tag = sessionData[i].event.tag;
+          if (!tags[tag]){
+            tags[tag] = 0;
+          }
+          tags[tag]++;
         }
-        tags[tag]++;
       }
 
       console.log(tags);
@@ -97,6 +106,9 @@ actionsGetter.prototype = {
       console.log('user.lastActive < lastActiveThreshold', user.lastActive < lastActiveThreshold);
 
       return Q(user.lastActive < lastActiveThreshold);
+    },
+    sessions: function(){
+      //check how many user sessions a user has to see if its over a threshold
     }
   }
 };

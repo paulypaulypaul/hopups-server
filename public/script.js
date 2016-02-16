@@ -24,16 +24,9 @@ $( document ).ready(function() {
   var domain = [%DOMAIN%];
 
   var dataQ = [];
-
-    var events = config.events;
-    var eventsToUse = [];
-
-  /*  var events = config.events;
-    var eventsToUse = [];*/
-
-    var registeredInitialPageView = false;
-
-//debugger;
+  var events = config.events;
+  var eventsToUse = [];
+  var registeredInitialPageView = false;
 
     var SessionData = function() {
       this.name = 'numero_user';
@@ -90,9 +83,7 @@ $( document ).ready(function() {
     }
     var sessionData = new SessionData();
     sessionData.getFromSession();
-
     sessionData.data.lastActive = new Date().getTime();
-
 
     new Fingerprint2().get(function(result){
       sessionData.setBfp(result);
@@ -109,9 +100,23 @@ $( document ).ready(function() {
       if (item.responsedatafrom === 'code'){
         $('body').append(item.responsedata);
         //add any events to the new html weve added
-        for (var j = 0; j < item.actionEvents.length; j++){
-          wireEvents(item.actionEvents[j]);
-        }
+
+        //for events attached as tags
+        var itemToWire = {
+          selector : '[data-hopups-click]',
+          event : 'click',
+          parent : item.payload.actionsessiondata
+        };
+
+        wireEvents(itemToWire);
+
+        //$('[data-hopups-click]')
+
+        //for events attached as normal in the ui
+        //for (var j = 0; j < item.actionEvents.length; j++){
+        //  wireEvents(item.actionEvents[j]);
+        //}
+
       } else if (item.responsedatafrom === 'uri'){
         $.get( item.responsedatalocation , function( data ) {
           $('body').append(data);
@@ -127,9 +132,14 @@ $( document ).ready(function() {
       $(itemToWire.selector).each(function() {
           $(this).on(itemToWire.event, function(event, eventItem) {
             var item = itemToWire;
+            var type = 'event';
 
             //if we fire this from our created event we get the item as a parameter
             if (eventItem){
+              //simple way to identify action fired - need to change
+              if (eventItem.type === 'and'){
+                type = 'action';
+              }
               item = eventItem;
             }
 
@@ -137,26 +147,13 @@ $( document ).ready(function() {
             if(item.dataFrom){
                dataFrom =  $(this).find(item.dataFrom).text();
             }
-            if (item.tag){
-              var tags = sessionData.getTags();
-
-              if (!tags[item.tag]){
-                tags[item.tag] = 0;
-              }
-              tags[item.tag]++;
-
-              sessionData.setTags(tags);
-              sessionData.persistToSession();
-            }
 
             var data = {
-              type: 'event',
-              siteId: siteId,
-              event : item,
               userId : sessionData.data._id,
               siteId: siteId,
-              parent: parent,
+              event : item,
               context: {
+                parent: item.parent,
                 dataFrom : dataFrom,
                 location: location.pathname,
               }
@@ -164,198 +161,9 @@ $( document ).ready(function() {
 
             dataQ.push(data);
 
-            /*
-            $.ajax({
-              contentType: 'application/json; charset=utf-8',
-              dataType: 'json',
-              type: "POST",
-              url: "http://" + domain + "/api/data/",
-              data: JSON.stringify(data)
-            }).done(function(response) {
-
-              var events = response.events;
-
-              for (var i = 0; i < events.length; i++){
-
-                if (events[i].response === 'html'){
-
-                  attachHTML(events[i]);
-
-                } else if (events[i].response === 'template'){
-                  var justTextModal = nanoModal('<iframe src="' + events[i].location + '?action=' + item.id + '" width="500" height="400" frameBorder="0"></iframe>');
-                  justTextModal.show();
-                  $( "body" ).trigger( "eventfired", [item] );
-                }
-
-              }
-
-              //set local session data to now - this will get overwritten when the server version comes down
-              sessionData.setLastActive(new Date().getTime())
-            });
-            */
-
           });
       });
     };
-
-    /*var wireEvent = function(itemToWire){
-      var item = itemToWire;
-
-      if (item.type == 'and'){
-        var rules = [];
-
-        for (var i = 0; i < item.items.length; i++){
-
-          var eventItem = item.items[i];
-
-          //if not multi session clear tags
-          if (!item.multiPage && eventItem.tag){
-            var tags = sessionData.getTags();
-            tags[eventItem.tag] = 0;
-            sessionData.setTags(tags);
-            sessionData.persistToSession();
-          }
-
-          if (eventItem.listen == 'interest'){
-            //add event to promise
-            rules.push({
-              context: eventItem,
-              rule: function(item){
-                if (pageMatch(item)){
-                  var tags = sessionData.getTags();
-                  return tags[item.tag] >= item.threshold;
-                }
-                return false;
-              }
-            });
-          }
-
-          if (eventItem.listen == 'inactive'){
-            //add event to promise
-            rules.push({
-              context: eventItem,
-              rule: function(item){
-                if (pageMatch(item)){
-                  var lastActive = sessionData.data.lastActive;
-                  console.log( (new Date().getTime() - lastActive) / 1000);
-                  return (new Date().getTime() - lastActive) / 1000 > item.threshold;
-                }
-                return false;
-              }
-            });
-          }
-
-        }
-
-        (function(rules, item){
-
-          var checkRules = function(){
-            //we want the borwser to sync with the server before we bother with events.
-            if (registeredInitialPageView){
-              var result = [];
-              for (var i = 0; i < rules.length; i++){
-                result.push(rules[i].rule(rules[i].context));
-              }
-
-              if (result.indexOf(false) < 0){
-
-                if (item.response === 'html'){
-
-                  $.get( 'http://' + domain + '/' + item.template , function( data ) {
-                    $('body').append(data);
-                  });
-
-                  clearTimeout(interval);
-
-                } else if (item.response === 'template'){
-
-                  //fire event
-                  console.log('fire event');
-
-                  var justTextModal = nanoModal('<iframe src="http://' + domain + '/' + item.template + '?action=' + item.id + '" width="500" height="400" frameBorder="0"></iframe>');
-                  justTextModal.show();
-
-                  $( "body" ).trigger( "eventfired", [item] );
-
-                  clearTimeout(interval);
-
-                }
-
-              }
-
-            }
-          }
-          var interval = setInterval(checkRules, 3000);
-
-        })(rules, item);
-
-      }
-*/
-    /*  if (item.listen == 'inactive'){
-        if (item.response == 'alert'){
-          new eventStarter(item.template)
-        }
-      }
-      else if (item.listen == 'interest'){
-        if (item.response == 'html'){
-          var interval
-          var showDialogue = function(){
-            if (tags[item.tag] >= item.threshold){
-
-              var justTextModal = nanoModal(item.template);
-              justTextModal.show();
-
-              clearTimeout(interval)
-            }
-          }
-          interval = setInterval(showDialogue, 3000);
-        }
-        if (item.response == 'template'){
-          var interval
-          var showDialogue = function(){
-            var tags = $.cookie("tags");
-            if (tags[item.tag] && tags[item.tag] >= item.threshold){
-
-              var justTextModal = nanoModal('<iframe src="http://' + domain + '/' + item.template + '" width="500" height="400" frameBorder="0"></iframe>');
-              justTextModal.show();
-
-              $( "body" ).trigger( "eventfired", [item] );
-
-              clearTimeout(interval)
-            }
-          }
-          interval = setInterval(showDialogue, 3000);
-        }
-      }*/
-  /*  };*/
-
-  /*  var eventStarter = function(message){
-        this._initial;
-        this._message = message;
-        this.start();
-        this.startReset();
-    }
-    eventStarter.prototype = {
-      start: function() {
-          var self = this;
-      //    alert('invoked')
-          self._initial = window.setTimeout(
-          function() {
-              alert(self._message);
-
-              //this bit is annoying in dev so turned it off
-              //self.invocation();
-          }, 5000);
-      },
-      startReset: function(){
-          var self = this;
-        document.body.onclick = function() {
-          //  alert('stopped')
-            clearTimeout( self._initial  );
-            self.start();
-        }
-      }
-    }*/
 
     var pageMatch = function(item){
         var pathname = window.location.pathname;
@@ -471,13 +279,14 @@ $( document ).ready(function() {
 
         for (var i = 0; i < events.length; i++){
 
-          if (events[i].response === 'html'){
+          if (events[i].responsetype === 'html'){
             attachHTML(events[i]);
+            $( "body" ).trigger( "eventfired", [events[i]] );
 
-          } else if (events[i].response === 'template'){
+          } else if (events[i].responsetype === 'template'){
             var justTextModal = nanoModal('<iframe src="' + events[i].location + '?action=' + item.id + '" width="500" height="400" frameBorder="0"></iframe>');
             justTextModal.show();
-            $( "body" ).trigger( "eventfired", [item] );
+            $( "body" ).trigger( "eventfired", [events[i]] );
           }
 
         }

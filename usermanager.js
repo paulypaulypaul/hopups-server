@@ -22,11 +22,11 @@ usermanager.prototype = {
         self.userSessionDb.findOne({_id: user.currentSessionId}, function(err, userSession){
           //hard coded hour session - obs parametise
           var nowMinusHour = new Date();
-          nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 60);
+          nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 1);
 
           if (!userSession || !userSession.date || userSession.date < nowMinusHour) {
             var userSession = self.userSessionDb();
-
+            userSession.user = user._id;
             userSession.save(function(err, userSession) {
               user.currentSessionId = userSession._id;
 

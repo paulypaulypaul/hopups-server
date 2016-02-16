@@ -7,6 +7,9 @@ var Site = require('./models/site');
 var Event = require('./models/event');
 var Segment = require('./models/segment');
 var Action = require('./models/action');
+var Hopup = require('./models/hopup');
+var SessionData = require('./models/sessiondata');
+var ActionSessionData = require('./models/actionsessiondata');
 
 router.get('/sites', function(req, res) {
       Site.find({}, function(err, sites){
@@ -38,6 +41,25 @@ router.get('/sites/:siteId/:type', function(req, res) {
         .exec(function(err, actions){
           res.send(actions);
         });
+      } else if (type === 'hopups'){
+        Hopup.find({ siteId : req.params.siteId })
+        //.populate('segments')
+        .exec(function(err, hopups){
+          res.send(hopups);
+        });
+      } else if (type === 'sessiondata'){
+//        SessionData.find({ siteId : req.params.siteId })
+        SessionData.find(req.query)
+        //.populate('segments')
+        .exec(function(err, sessiondata){
+          res.send(sessiondata);
+        });
+      } else if (type === 'actionsessiondata'){
+        ActionSessionData.find({ siteId : req.params.siteId })
+        //.populate('segments')
+        .exec(function(err, sessiondata){
+          res.send(sessiondata);
+        });
       }
 
 });
@@ -66,6 +88,10 @@ router.post('/sites/:siteId/:type', function(req, res) {
         Action.update(search, thing, { upsert: true }, function(err, action){
           res.send(action);
         });
+      } else if (type === 'hopups'){
+        Hopup.update(search, thing, { upsert: true }, function(err, action){
+          res.send(action);
+        });
       }
 });
 
@@ -83,6 +109,10 @@ router.delete('/sites/:siteId/:type/:id', function(req, res) {
         });
       } else if (type === 'actions'){
         Action.find({ _id : id }).remove().exec(function(err, actions){
+          res.send(actions);
+        });
+      } else if (type === 'hopups'){
+        Hopup.find({ _id : id }).remove().exec(function(err, actions){
           res.send(actions);
         });
       }
