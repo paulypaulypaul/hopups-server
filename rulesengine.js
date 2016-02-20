@@ -54,6 +54,7 @@ rulesEngine.prototype = {
 
                     //yes this will only work for one action - just proving a concept
                     action.payload.actionsessiondata = actionsessiondata._id;
+                    action.payload.action = actionsessiondata.action;
                       deferred.resolve(actions);
                 });
 

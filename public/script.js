@@ -15,9 +15,70 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 ga('create', 'UA-1798863-8', 'auto');
 
+var SessionData = function() {
+  this.name = 'numero_user';
+  this.data;
+//  this.getFromSession();
+}
+SessionData.prototype = {
+  get: function(){
+    if (!this.data[this.name]){
+      this.data[this.name] = {};
+    }
+    return this.data[name];
+  },
+  set: function(value){
+    this.data[this.name] = value;
+  },
+  getFromSession: function(){
+    if (localStorage[this.name] && localStorage[this.name] !== 'undefined'){
+      this.data = JSON.parse(localStorage[this.name]);
+    } else {
+      this.data = {};
+    }
+  },
+  persistToSession: function(){
+    localStorage[this.name] = JSON.stringify(this.data);
+  },
+  getTags: function(){
+    if (!this.data.sessionData){
+      this.data.sessionData = {};
+      if (!this.data.sessionData.tags){
+        this.data.sessionData.tags = {};
+      }
+    }
+    return this.data.sessionData.tags;
+  },
+  setTags: function(value){
+    if (!this.data.sessionData){
+      this.data.sessionData = {};
+    }
+    return this.data.sessionData.tags = value;
+  },
+  getBfp: function(){
+    return this.data.bfp;
+  },
+  setBfp: function(value){
+    return this.data.bfp = value;
+  },
+  getLastActive: function(){
+    return this.data.lastActive;
+  },
+  setLastActive: function(value){
+    return this.data.lastActive = value;
+  }
+}
 
 
 $( document ).ready(function() {
+
+  $.urlParam = function(name){
+      var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      if (results){
+        return results[1] || 0;
+      }
+      return 0;
+  }
 
   var siteId = [%SITEID%]
   var config = [%CONFIG%]
@@ -28,73 +89,24 @@ $( document ).ready(function() {
   var eventsToUse = [];
   var registeredInitialPageView = false;
 
-    var SessionData = function() {
-      this.name = 'numero_user';
-      this.data;
-    //  this.getFromSession();
-    }
-    SessionData.prototype = {
-      get: function(){
-        if (!this.data[this.name]){
-          this.data[this.name] = {};
-        }
-        return this.data[name];
-      },
-      set: function(value){
-        this.data[this.name] = value;
-      },
-      getFromSession: function(){
-        if (localStorage[this.name] && localStorage[this.name] !== 'undefined'){
-          this.data = JSON.parse(localStorage[this.name]);
-        } else {
-          this.data = {};
-        }
-      },
-      persistToSession: function(){
-        localStorage[this.name] = JSON.stringify(this.data);
-      },
-      getTags: function(){
-        if (!this.data.sessionData){
-          this.data.sessionData = {};
-          if (!this.data.sessionData.tags){
-            this.data.sessionData.tags = {};
-          }
-        }
-        return this.data.sessionData.tags;
-      },
-      setTags: function(value){
-        if (!this.data.sessionData){
-          this.data.sessionData = {};
-        }
-        return this.data.sessionData.tags = value;
-      },
-      getBfp: function(){
-        return this.data.bfp;
-      },
-      setBfp: function(value){
-        return this.data.bfp = value;
-      },
-      getLastActive: function(){
-        return this.data.lastActive;
-      },
-      setLastActive: function(value){
-        return this.data.lastActive = value;
-      }
-    }
-    var sessionData = new SessionData();
-    sessionData.getFromSession();
-    sessionData.data.lastActive = new Date().getTime();
+  //this is used so we know what context to fire events in - iframes will be loaded with this session id
+  var actionsessiondata = $.urlParam('actionsessiondata');
+  var action = $.urlParam('action');
 
-    new Fingerprint2().get(function(result){
-      sessionData.setBfp(result);
-      sessionData.persistToSession();
-    });
+  var sessionData = new SessionData();
+  sessionData.getFromSession();
+  sessionData.data.lastActive = new Date().getTime();
 
-    var updatePhoneNumber = function(number){
-      $('li.last-menu').html(number);
-      $('#small-links-list').html(number);
-      $('#phoneNo').html(number);
-    };
+  new Fingerprint2().get(function(result){
+    sessionData.setBfp(result);
+    sessionData.persistToSession();
+  });
+
+  var updatePhoneNumber = function(number){
+    $('li.last-menu').html(number);
+    $('#small-links-list').html(number);
+    $('#phoneNo').html(number);
+  };
 
     var attachHTML = function(item){
       if (item.responsedatafrom === 'code'){
@@ -165,12 +177,16 @@ $( document ).ready(function() {
       });
     };
 
+    //this wont be here long we will be matching pages on the server
     var pageMatch = function(item){
         var pathname = window.location.pathname;
         if (pathname.charAt(0) == "/"){
           pathname = pathname.substr(1);
         }
         var page = item.page;
+        if (!page){
+          return false;
+        }
         if (page.charAt(0) == "/"){
           page = page.substr(1);
         }
@@ -180,47 +196,34 @@ $( document ).ready(function() {
         return false;
     }
 
-    $.urlParam = function(name){
-        var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        if (results){
-          return results[1] || 0;
-        }
-        return 0;
-    }
+    //bootstrap events
 
-    //normal mode
-    var action = $.urlParam('action');
-    if (!action){
-      //bootstrap events
-      for (var i = 0; i < events.length; i++){
-        if (pageMatch(events[i])){
-            eventsToUse.push(events[i])
-        }
-      }
-      for (var i = 0; i < eventsToUse.length; i++) {
-        wireEvents(eventsToUse[i]);
-      }
+    //we are in action mode - so only attach action events
+    var actionEvents = [];
+    if (action){
 
-      //bootstrap events
-      /*for (var i = 0; i < events.length; i++){
-        if (pageMatch(events[i])){
-            eventsToUse.push(events[i])
-        }
-      }
-      for (var i = 0; i < eventsToUse.length; i++) {
-        wireEvent(eventsToUse[i]);
-      }*/
-    //pop up alt mode - to report against a raised event
-    } else {
-      //get event for the actions
-      for (var i = 0; i < events.length; i++){
-        if (events[i].id == action){
-          for (var j = 0; j < events[i].hopups.length; j++) {
-            wireHopup(events[i].hopups[j], events[i]);
+      //get the events from the corresponding action
+      for (var i = 0; i < config.hopups.length; i++){
+          for (var j = 0; j < config.hopups[i].actions.length; j++){
+            if (action === config.hopups[i].actions[j]){
+              actionEvents = config.hopups[i].events;
+            }
           }
+      }
+      console.log(actionEvents);
+    }
+
+    for (var i = 0; i < events.length; i++){
+      if (!action || action && actionEvents.indexOf(events[i]._id) > -1){
+        if (pageMatch(events[i])){
+            eventsToUse.push(events[i])
         }
       }
     }
+    for (var i = 0; i < eventsToUse.length; i++) {
+      wireEvents(eventsToUse[i]);
+    }
+
 
 
     //we sync on start to get the latest phone number as these expire quickly but userid's are long lasting
@@ -277,6 +280,8 @@ $( document ).ready(function() {
         updatePhoneNumber(user.phoneNo);
         syncing = false;
 
+        //these are the events we get back from the server - the will be action immidiatly
+        //mabee we could send down event to soon be required to they are there immidiatly - hmmmmm.
         for (var i = 0; i < events.length; i++){
 
           if (events[i].responsetype === 'html'){
@@ -284,7 +289,7 @@ $( document ).ready(function() {
             $( "body" ).trigger( "eventfired", [events[i]] );
 
           } else if (events[i].responsetype === 'template'){
-            var justTextModal = nanoModal('<iframe src="' + events[i].location + '?action=' + item.id + '" width="500" height="400" frameBorder="0"></iframe>');
+            var justTextModal = nanoModal('<iframe src="' + events[i].responsedatalocation + '?action=' + events[i].payload.action + '&actionsessiondata=' + events[i].payload.actionsessiondata + '" width="500" height="400" frameBorder="0"></iframe>');
             justTextModal.show();
             $( "body" ).trigger( "eventfired", [events[i]] );
           }
@@ -293,7 +298,6 @@ $( document ).ready(function() {
 
         //set local session data to now - this will get overwritten when the server version comes down
         sessionData.setLastActive(new Date().getTime())
-
 
       });
     }
