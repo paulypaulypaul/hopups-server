@@ -81,6 +81,8 @@ $( document ).ready(function() {
       return 0;
     },
     attachHTML: function(item){
+      var self = this;
+
       if (item.responsedatafrom === 'code'){
         $('body').append(item.responsedata);
         //add any events to the new html weve added
@@ -102,12 +104,17 @@ $( document ).ready(function() {
         //}
 
       } else if (item.responsedatafrom === 'uri'){
+
+        //here we set the _actionsessiondata and _action values from the item
+        this._actionsessiondata = item.payload.actionsessiondata;
+        this._action = item.payload.action;
+
+
         $.get( item.responsedatalocation , function( data ) {
           $('body').append(data);
           //add any events to the new html weve added
-          for (var j = 0; j < item.actionEvents.length; j++){
-            wireEvents(item.actionEvents[j])
-          }
+          self.wireEvents();
+          
         });
       }
     },
