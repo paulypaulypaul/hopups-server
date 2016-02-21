@@ -21,7 +21,7 @@ router.use(function timeLog(req, res, next) {
   next();
 });
 
-router.post('/syncuser', function(req, res) {
+router.post('/sync', function(req, res) {
   var payloadUserId = req.body.userId || 'none';
   var siteId = req.body.siteId;
   var dataQ = req.body.dataQ;
@@ -60,10 +60,10 @@ router.post('/syncuser', function(req, res) {
         userManager.resetLastActive(user).then(function(){
 
           //should we fire any events on the client
-          rulesEngine.getClientActions(user).then(function(events){
+          rulesEngine.getClientActions(user).then(function(actions){
             res.send({
               'user': user,
-              'events': events
+              'actions': actions
             });
           });
 
@@ -73,11 +73,11 @@ router.post('/syncuser', function(req, res) {
       } else {
         //we still check if we should fire events on the client
         //as some events are not prompted by user actions but, for instance, by lack of user action - inactive action.
-        //should we fire any events on the client
-        rulesEngine.getClientActions(user).then(function(events){
+        //should we fire without any events from the client
+        rulesEngine.getClientActions(user).then(function(actions){
           res.send({
             'user': user,
-            'events': events
+            'actions': actions
           });
         });
       }

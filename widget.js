@@ -37,9 +37,14 @@ router.get('/:id', function(req, res) {
               .exec(function(err, hopups){
                   config.hopups = hopups;
 
-                  data = data.replace(/\[%SITEID%\]/gi, "'" + site._id + "';");
-                  data = data.replace(/\[%CONFIG%\]/gi, JSON.stringify(config));
-                  data = data.replace(/\[%DOMAIN%\]/gi, "'numero-ph.thisisnumero.internal:3000'");
+                  data = data.replace(/\[%CONFIG%\]/gi,
+                    JSON.stringify({
+                      config: config,
+                      siteId: site._id,
+                      domain: 'numero-ph.thisisnumero.internal:3000'
+                    }
+                  ));
+
                   res.write(data)
                   res.end();
 
