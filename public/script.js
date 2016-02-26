@@ -72,6 +72,7 @@ $( document ).ready(function() {
   }
   ClientApp.prototype = {
     _dataQ : [],
+    _eventQ : null,
     _registeredInitialPageView: false,
     getUrlParam: function(name){
       var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -83,7 +84,7 @@ $( document ).ready(function() {
     attachHTML: function(item){
       var self = this;
 
-      if (item.responsedatafrom === 'code'){
+      if (item.responsedatafrom === 'code' || item.responsedatafrom === 'predefined'){
         $('body').append(item.responsedata);
         //add any events to the new html weve added
 
@@ -94,7 +95,7 @@ $( document ).ready(function() {
           parent : item.payload.actionsessiondata
         };
 
-        wireEvents(itemToWire);
+        self.wireEvents(itemToWire);
 
         //$('[data-hopups-click]')
 
@@ -114,7 +115,7 @@ $( document ).ready(function() {
           $('body').append(data);
           //add any events to the new html weve added
           self.wireEvents();
-          
+
         });
       }
     },
@@ -157,6 +158,7 @@ $( document ).ready(function() {
       var self = this;
       $(itemToWire.selector).each(function() {
           $(this).on(itemToWire.event, function(event, eventItem) {
+
             var item = itemToWire;
             var type = 'event';
 
@@ -185,6 +187,20 @@ $( document ).ready(function() {
             };
 
             self._dataQ.push(data);
+
+            //if link we want to pause navigation untill we have registered the view
+            if ($(this).attr('href') && $(this).attr('href') != ''){
+
+              var originalEvent = this;
+              self.syncImmidiate(function(){
+                window.location = $(originalEvent).attr('href');
+              })
+
+
+              event.preventDefault();
+              event.stopPropagation();
+
+            }
 
           });
       });
@@ -219,13 +235,11 @@ $( document ).ready(function() {
         self.sync();
       }, 3000, this);
     },
-    _syncing : false,
-    sync: function(){
+    syncImmidiate: function(callback){
       if (this._syncing) return;
+      this._syncing = true;
 
       var self = this;
-
-      this._syncing = true;
 
       //copy and reset the current dataQ
       var currentDataQ = this._dataQ.concat();
@@ -233,7 +247,39 @@ $( document ).ready(function() {
 
       var data = {
         userId: 'none',
-        siteId: this._siteId,
+        siteId: self._siteId,
+        dataQ: currentDataQ
+      }
+
+      if (sessionData.data){
+        data.userId = sessionData.data._id;
+      }
+
+      $.ajax({
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        type: "POST",
+        url: "http://" + this._domain + "/api/sync/",
+        data: JSON.stringify(data)
+      })
+      .always(function() {
+        callback();
+      });
+    },
+    _syncing : false,
+    sync: function(){
+      if (this._syncing) return;
+      this._syncing = true;
+
+      var self = this;
+
+      //copy and reset the current dataQ
+      var currentDataQ = this._dataQ.concat();
+      this._dataQ = [];
+
+      var data = {
+        userId: 'none',
+        siteId: self._siteId,
         dataQ: currentDataQ
       }
 
@@ -301,7 +347,8 @@ $( document ).ready(function() {
           $( "body" ).trigger( "eventfired", [actions[i]] );
 
         } else if (actions[i].responsetype === 'template'){
-          var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '?action=' + actions[i].payload.action + '&actionsessiondata=' + actions[i].payload.actionsessiondata + '" width="500" height="400" frameBorder="0"></iframe>');
+          var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '" width="500" height="400" frameBorder="0"></iframe>');
+//          var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '?action=' + actions[i].payload.action + '&actionsessiondata=' + actions[i].payload.actionsessiondata + '" width="500" height="400" frameBorder="0"></iframe>');
           justTextModal.show();
           $( "body" ).trigger( "eventfired", [actions[i]] );
         }

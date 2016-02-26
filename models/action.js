@@ -16,6 +16,7 @@ var ActionSchema = new Schema({
         responsedatafrom: String,
         responsedatalocation: String,
         responsedata:String,
+        responsePredefinedTemplate: String,
         multiPage: String,
         multiSession: String,
         events: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
