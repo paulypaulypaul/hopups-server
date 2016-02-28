@@ -10,72 +10,8 @@ var Action = require('./models/action');
 var Hopup = require('./models/hopup');
 var SessionData = require('./models/sessiondata');
 var ActionSessionData = require('./models/actionsessiondata');
+var verifyFacebookUserAccessToken = require('./verifyFacebookUserAccessToken');
 
-var User = require('./models/user');
-
-var request = require('request');
-
-var Q = require('q');
-
-var verifyFacebookUserAccessToken = function(req, res, next) {
-
-  var token  = req.headers.authorization.split(' ')[1]
-
-
-	var path = 'https://graph.facebook.com/me?access_token=' + token;
-	request(path, function (error, response, body) {
-		var data = JSON.parse(body);
-		if (!error && response && response.statusCode && response.statusCode == 200) {
-			var facebook_user = {
-				facebookUserId: data.id,
-				username: data.name,
-				firstName: data.first_name,
-				lastName: data.last_name,
-				email: data.email
-			};
-
-      // find a user whose email is the same as the forms email
-        // we are checking to see if the user trying to login already exists
-        User.findOne({ 'facebook.email' :  facebook_user.email }, function(err, user) {
-            // if there are any errors, return the error
-            if (err)
-                res.send(err);
-
-            // check to see if theres already a user with that email
-            if (user) {
-                req.user = user;
-                next();
-            } else {
-
-                // if there is no user with that email
-                // create the user
-                var newUser            = new User();
-                newUser.facebook = facebook_user;
-
-                // save the user
-                newUser.save(function(err, user) {
-                    if (err)
-                        throw err;
-
-                    req.user = user
-                    next();
-                });
-            }
-
-      });
-
-      console.log('!!!!!!!!!!!!!!verify', facebook_user);
-
-
-
-		}
-		else {
-			console.log(data.error);
-			//console.log(response);
-			//deferred.reject({code: response.statusCode, message: data.error.message});
-		}
-	});
-}
 
 router.get('/sites', verifyFacebookUserAccessToken,  function(req, res) {
 
@@ -89,7 +25,7 @@ router.get('/sites', verifyFacebookUserAccessToken,  function(req, res) {
 router.post('/sites', verifyFacebookUserAccessToken, function(req, res) {
       var site = req.body;
       site.user = req.user._id;
-      
+
       Site.collection.insert(site, function(err, site){
           res.send(site);
       });

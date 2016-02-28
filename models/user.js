@@ -8,6 +8,10 @@ var userSchema = mongoose.Schema({
         firstName        : String,
         lastName         : String,
         email           : String,
+        token           : {
+          access_token : String,
+          stored_time : { type: Date, default: Date.now }
+        }
     }
 });
 
