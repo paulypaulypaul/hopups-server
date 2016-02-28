@@ -12,12 +12,12 @@ var SessionData = require('./models/sessiondata');
 var ActionSessionData = require('./models/actionsessiondata');
 var verifyFacebookUserAccessToken = require('./verifyFacebookUserAccessToken');
 
+var _ = require('underscore');
 
 router.get('/sites', verifyFacebookUserAccessToken,  function(req, res) {
+      var requestUserId = req.user._id;
 
-      console.log('uuuuuuuuuuuussssssssser', req.user);
-
-      Site.find({user: req.user._id}, function(err, sites){
+      Site.find({user: requestUserId}, function(err, sites){
         res.send(sites);
       });
 });
@@ -31,43 +31,59 @@ router.post('/sites', verifyFacebookUserAccessToken, function(req, res) {
       });
 });
 
-router.get('/sites/:siteId/:type', function(req, res) {
+router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, res) {
+      var requestUserId = req.user._id;
+      var siteId = req.params.siteId;
       var type = req.params.type;
+      //check this user id can access the
 
-      if (type === 'events'){
-        Event.find({ siteId : req.params.siteId }, function(err, events){
-          res.send(events);
+      Site.find({user: requestUserId}, '_id', function(err, sites){
+        isRequestedSiteSuthorised = _.some( sites, function( el ) {
+            console.log(el._id, siteId)
+            return el._id + '' === siteId;
         });
-      } else if (type === 'segments'){
-        Segment.find({ siteId : req.params.siteId }, function(err, segments){
-          res.send(segments);
-        });
-      } else if (type === 'actions'){
-        Action.find({ siteId : req.params.siteId })
-        //.populate('segments')
-        .exec(function(err, actions){
-          res.send(actions);
-        });
-      } else if (type === 'hopups'){
-        Hopup.find({ siteId : req.params.siteId })
-        //.populate('segments')
-        .exec(function(err, hopups){
-          res.send(hopups);
-        });
-      } else if (type === 'sessiondata'){
-//        SessionData.find({ siteId : req.params.siteId })
-        SessionData.find(req.query)
-        //.populate('segments')
-        .exec(function(err, sessiondata){
-          res.send(sessiondata);
-        });
-      } else if (type === 'actionsessiondata'){
-        ActionSessionData.find({ siteId : req.params.siteId })
-        //.populate('segments')
-        .exec(function(err, sessiondata){
-          res.send(sessiondata);
-        });
-      }
+
+        if (isRequestedSiteSuthorised){
+
+
+            if (type === 'events'){
+              Event.find({ siteId : siteId }, function(err, events){
+                res.send(events);
+              });
+            } else if (type === 'segments'){
+              Segment.find({ siteId : siteId }, function(err, segments){
+                res.send(segments);
+              });
+            } else if (type === 'actions'){
+              Action.find({ siteId : siteId })
+              //.populate('segments')
+              .exec(function(err, actions){
+                res.send(actions);
+              });
+            } else if (type === 'hopups'){
+              Hopup.find({ siteId : siteId })
+              //.populate('segments')
+              .exec(function(err, hopups){
+                res.send(hopups);
+              });
+            } else if (type === 'sessiondata'){
+      //        SessionData.find({ siteId : req.params.siteId })
+              SessionData.find(req.query)
+              //.populate('segments')
+              .exec(function(err, sessiondata){
+                res.send(sessiondata);
+              });
+            } else if (type === 'actionsessiondata'){
+              ActionSessionData.find({ siteId : req.params.siteId })
+              //.populate('segments')
+              .exec(function(err, sessiondata){
+                res.send(sessiondata);
+              });
+            }
+        }
+
+
+      });
 
 });
 
@@ -96,9 +112,11 @@ router.post('/sites/:siteId/:type', function(req, res) {
           res.send(action);
         });
       } else if (type === 'hopups'){
-        Hopup.update(search, thing, { upsert: true }, function(err, action){
-          res.send(action);
+        Hopup.update(search, thing, { upsert: true }, function(err, hopup){
+          res.send(hopup);
         });
+      } else {
+        res.send('nothing to do');
       }
 });
 

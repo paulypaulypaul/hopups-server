@@ -5,7 +5,7 @@ var Schema       = mongoose.Schema;
 
 var EventSchema = new Schema({
         name: String,
-        siteId: String,
+        siteId: { type: Schema.Types.ObjectId, ref: 'Site' },
         page: String,
         selector: String,
         event: String,
