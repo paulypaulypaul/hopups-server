@@ -20,7 +20,8 @@ var ActionSchema = new Schema({
         multiPage: String,
         multiSession: String,
         events: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
-        payload: { type: {}, default: {} }
+        payload: { type: {}, default: {} },
+        templateAttributes: {}
     });
 
 

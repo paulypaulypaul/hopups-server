@@ -16,8 +16,8 @@ var ActionSessionDataSchema = new Schema({
       sessionId: { type: Schema.Types.ObjectId, ref: 'UserSession' },
       action: { type: Schema.Types.ObjectId, ref: 'Action' },
       hopup: { type: Schema.Types.ObjectId, ref: 'Hopup' },
-      context: {},
-      date: { type: Date, default: Date.now }
+      date: { type: Date, default: Date.now },
+      context: {}
     });
 
 
