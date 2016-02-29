@@ -14,21 +14,33 @@ var verifyFacebookUserAccessToken = require('./verifyFacebookUserAccessToken');
 
 var _ = require('underscore');
 
-router.get('/sites', verifyFacebookUserAccessToken,  function(req, res) {
+router.get('/sites/:siteId?', verifyFacebookUserAccessToken,  function(req, res) {
       var requestUserId = req.user._id;
-
-      Site.find({user: requestUserId}, function(err, sites){
+      var query = {user: requestUserId};
+      if (req.params.siteId){
+        query._id = req.params.siteId;
+      }
+      Site.find(query, function(err, sites){
         res.send(sites);
       });
 });
 
-router.post('/sites', verifyFacebookUserAccessToken, function(req, res) {
+router.post('/sites/', verifyFacebookUserAccessToken, function(req, res) {
       var site = req.body;
       site.user = req.user._id;
 
-      Site.collection.insert(site, function(err, site){
-          res.send(site);
+      if (!site._id){
+        site._id = mongoose.Types.ObjectId();
+      }
+
+      var search = {
+        _id : site._id
+      }
+
+      Site.update(search, site, { upsert: true }, function(err, report){
+        res.send(report);
       });
+
 });
 
 router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, res) {

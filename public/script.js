@@ -84,6 +84,12 @@ $( document ).ready(function() {
     attachHTML: function(item){
       var self = this;
 
+      //here we set the _actionsessiondata and _action values from the item
+      //so that when we are attaching events to the new code we have added
+      //we know we are in action firing mode!
+      this._actionsessiondata = item.payload.actionsessiondata;
+      this._action = item.payload.action;
+
       if (item.responsedatafrom === 'code' || item.responsedatafrom === 'predefined'){
         $('body').append(item.responsedata);
         //add any events to the new html weve added
@@ -105,11 +111,6 @@ $( document ).ready(function() {
         //}
 
       } else if (item.responsedatafrom === 'uri'){
-
-        //here we set the _actionsessiondata and _action values from the item
-        this._actionsessiondata = item.payload.actionsessiondata;
-        this._action = item.payload.action;
-
 
         $.get( item.responsedatalocation , function( data ) {
           $('body').append(data);

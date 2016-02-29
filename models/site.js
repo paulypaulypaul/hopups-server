@@ -4,7 +4,11 @@ var Schema       = mongoose.Schema;
 
 var SiteSchema   = new Schema({
         name: String,
+        phoneNumbers: String,
+        javascriptNamespace: String,
         user: { type: Schema.Types.ObjectId, ref: 'User' },
+        active: { type: Boolean, default: true },
+        description: {type: String, default: 'Bacon ipsum dolor sit amet salami ham hock ham, hamburger corned beef'}
     });
 
 module.exports = mongoose.model('Site', SiteSchema);
