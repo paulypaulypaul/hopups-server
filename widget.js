@@ -41,7 +41,7 @@ router.get('/:id', function(req, res) {
                     JSON.stringify({
                       config: config,
                       siteId: site._id,
-                      domain: 'numero-ph.thisisnumero.internal:3000'
+                      domain: req.get('host')  // this makes it easy to use on test and production serve - might not be goo idea - not sure why
                     }
                   ));
 

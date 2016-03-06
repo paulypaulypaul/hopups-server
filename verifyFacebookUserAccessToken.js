@@ -44,7 +44,7 @@ var findOrCreateUserByFacebookData = function(data, token){
   var deferred = Q.defer();
 
   var facebook_user = {
-    facebookUserId: data.id,
+    id: data.id,
     username: data.name,
     firstName: data.first_name,
     lastName: data.last_name,
@@ -56,7 +56,7 @@ var findOrCreateUserByFacebookData = function(data, token){
 
   // find a user whose email is the same as the forms email
   // we are checking to see if the user trying to login already exists
-  User.findOne({ 'facebook.email' :  facebook_user.email }, function(err, user) {
+  User.findOne({ 'facebook.id' :  facebook_user.id }, function(err, user) {
 
       if (user) {
         console.log('found user')

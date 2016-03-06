@@ -20,6 +20,7 @@ router.get('/sites/:siteId?', verifyFacebookUserAccessToken,  function(req, res)
       if (req.params.siteId){
         query._id = req.params.siteId;
       }
+
       Site.find(query, function(err, sites){
         res.send(sites);
       });
@@ -37,8 +38,20 @@ router.post('/sites/', verifyFacebookUserAccessToken, function(req, res) {
         _id : site._id
       }
 
-      Site.update(search, site, { upsert: true }, function(err, report){
-        res.send(report);
+      /*Event.update(search,
+            "siteId" : ObjectId("56b8891f3cf226082f1627e4"),
+            "message" : "eventfired",
+            "event" : "eventfired",
+            "selector" : "body",
+            "page" : "*",
+            "name" : "eventfired",
+            "tag" : "eventfired"
+        }, { upsert: true }, function(err, event){
+        res.send(event);
+      });*/
+
+      Site.findOneAndUpdate(search, site, { upsert: true, new: true }, function(err, report, doc){
+        res.send(doc);
       });
 
 });
