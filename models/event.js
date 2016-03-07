@@ -12,7 +12,8 @@ var EventSchema = new Schema({
         message: String,
         tag: String,
         dataFrom: String,
-        active: { type: Boolean, default: true }
+        active: { type: Boolean, default: true },
+        system: { type: Boolean, default: false }
     });
 
 

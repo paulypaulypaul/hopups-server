@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var fs = require('fs');
-
+var Q = require('q');
 var mongoose   = require('mongoose');
 var Site = require('./models/site');
 var Event = require('./models/event');
@@ -11,6 +11,8 @@ var Hopup = require('./models/hopup');
 var SessionData = require('./models/sessiondata');
 var ActionSessionData = require('./models/actionsessiondata');
 var verifyFacebookUserAccessToken = require('./verifyFacebookUserAccessToken');
+var SiteInitialiser = require('./siteinitialiser');
+var siteInitialiser = new SiteInitialiser();
 
 var _ = require('underscore');
 
@@ -38,20 +40,10 @@ router.post('/sites/', verifyFacebookUserAccessToken, function(req, res) {
         _id : site._id
       }
 
-      /*Event.update(search,
-            "siteId" : ObjectId("56b8891f3cf226082f1627e4"),
-            "message" : "eventfired",
-            "event" : "eventfired",
-            "selector" : "body",
-            "page" : "*",
-            "name" : "eventfired",
-            "tag" : "eventfired"
-        }, { upsert: true }, function(err, event){
-        res.send(event);
-      });*/
-
-      Site.findOneAndUpdate(search, site, { upsert: true, new: true }, function(err, report, doc){
-        res.send(doc);
+      Site.findOneAndUpdate(search, site, { upsert: true, new: true }, function(err, site){
+        siteInitialiser.initSite(site).then(function(site){
+          res.send(site);
+        });
       });
 
 });

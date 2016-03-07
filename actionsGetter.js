@@ -61,7 +61,7 @@ actionsGetter.prototype = {
     return deferred.promise;
   },
   checkIfSegmentCriteriaMet: function(segment, user){
-    return Q(this.plugins[segment.listen](this.sessionData, segment, user));
+    return Q(this.plugins[segment.listen](this.sessionData, segment, user, this.userSession));
   },
   filterPerformedHopups: function(hopups){
     var deferred = Q.defer();
@@ -84,7 +84,7 @@ actionsGetter.prototype = {
       var tags = {}
 
       for (var i = 0; i < sessionData.length; i++){
-        //some session data events dont have tags - we need to properly devide thiese up - this for now
+        //some session data events dont have tags - we need to properly divide thiese up - this for now
         if (sessionData[i].event){
           var tag = sessionData[i].event.tag;
           if (!tags[tag]){
@@ -107,8 +107,11 @@ actionsGetter.prototype = {
 
       return Q(user.lastActive < lastActiveThreshold);
     },
-    sessions: function(){
-      //check how many user sessions a user has to see if its over a threshold
+    visits: function(sessionData, segment, user, userSessions){
+      if (userSessions.length === Number(segment.threshold)){
+        return Q(true);
+      }
+      return Q(false);
     }
   }
 };
