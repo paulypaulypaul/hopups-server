@@ -13,7 +13,9 @@ var HopupSchema = new Schema({
         siteId: { type: Schema.Types.ObjectId, ref: 'Site' },
         actions: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
         segments: [{ type: Schema.Types.ObjectId, ref: 'Segment' }],
-        events: [{ type: Schema.Types.ObjectId, ref: 'Event' }]
+        events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+        active: { type: Boolean, default: true },
+        system: { type: Boolean, default: false }
     });
 
 

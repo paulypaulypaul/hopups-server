@@ -28,7 +28,7 @@ router.get('/:id', function(req, res) {
               return console.log(err);
             }
 
-            Event.find({siteId : site._id}, function(err, events){
+            Event.find({siteId : site._id, active: true}, function(err, events){
 
               config.events = events;
 

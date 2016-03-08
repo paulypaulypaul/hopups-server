@@ -21,7 +21,9 @@ var ActionSchema = new Schema({
         multiSession: String,
         events: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
         payload: { type: {}, default: {} },
-        templateAttributes: {}
+        templateAttributes: {},
+        active: { type: Boolean, default: true },
+        system: { type: Boolean, default: false }
     });
 
 

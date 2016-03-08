@@ -10,7 +10,9 @@ var SegmentSchema = new Schema({
         page: String,
         listen: String,
         tag: String,
-        threshold: String
+        threshold: String,
+        active: { type: Boolean, default: true },
+        system: { type: Boolean, default: false }
     });
 
 
