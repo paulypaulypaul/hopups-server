@@ -11,7 +11,7 @@ var Hopup = require('./models/hopup');
 var SessionData = require('./models/sessiondata');
 var ActionSessionData = require('./models/actionsessiondata');
 var verifyFacebookUserAccessToken = require('./verifyFacebookUserAccessToken');
-var SiteInitialiser = require('./siteinitialiser');
+var SiteInitialiser = require('./siteInitialiser');
 var siteInitialiser = new SiteInitialiser();
 
 var _ = require('underscore');
