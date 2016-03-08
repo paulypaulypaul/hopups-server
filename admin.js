@@ -29,10 +29,12 @@ router.get('/sites/:siteId?', verifyFacebookUserAccessToken,  function(req, res)
 });
 
 router.post('/sites/', verifyFacebookUserAccessToken, function(req, res) {
+      var newSite = false;
       var site = req.body;
       site.user = req.user._id;
 
       if (!site._id){
+        newSite = true;
         site._id = mongoose.Types.ObjectId();
       }
 
@@ -41,9 +43,13 @@ router.post('/sites/', verifyFacebookUserAccessToken, function(req, res) {
       }
 
       Site.findOneAndUpdate(search, site, { upsert: true, new: true }, function(err, site){
-        siteInitialiser.initSite(site).then(function(site){
+        if (newSite){
+          siteInitialiser.initSite(site).then(function(site){
+            res.send(site);
+          });
+        } else {
           res.send(site);
-        });
+        }
       });
 
 });
