@@ -13,6 +13,8 @@ var ActionSessionData = require('./models/actionsessiondata')
 
 var ActionsGetter = require('./actionsgetter')
 
+var logger = require('./lib/logger').create("RULES ENGINE");
+
 var rulesEngine = function () {
 };
 
@@ -25,7 +27,7 @@ rulesEngine.prototype = {
 
       var actionsGetter = new ActionsGetter(rulesEngineData);
       actionsGetter.getHopupsToPerform().then(function(hopups){
-
+        console.log('hopups to return first - ', hopups);
         self.updateClientSession(user, hopups, rulesEngineData.currentUserSession).then(function(){
           console.log('hopups to return - ', hopups);
 
@@ -128,6 +130,15 @@ rulesEngine.prototype = {
 
 
     Q.all([sessionDataDeferred.promise, segmentDeferred.promise, currentUserSessionDeferred.promise, userSessionDeferred.promise, actionDeferred.promise, hopupsDeferred.promise]).then(function(result){
+      logger.info('collectData', {
+        sessionData: result[0],
+        segments: result[1],
+        currentUserSession: result[2],
+        userSession: result[3],
+        actions: result[4],
+        hopups: result[5],
+        user: user
+      });
       deferred.resolve({
         sessionData: result[0],
         segments: result[1],

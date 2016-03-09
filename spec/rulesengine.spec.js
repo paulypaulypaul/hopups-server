@@ -9,6 +9,7 @@ var SessionData = require('../models/sessiondata');
 var SiteUser = require('../models/siteuser');
 var UserSession = require('../models/usersession');
 var Site = require('../models/site');
+var Hopup = require('../models/hopup');
 
 describe("Rules engine tests", function() {
   var site;
@@ -37,60 +38,78 @@ describe("Rules engine tests", function() {
           var segment1Id = segments[0]._id;
           var segment2Id = segments[1]._id;
 
-
           Action.create([
-              {"siteId":site._id,"name":"Interest then Inactive","type":"and","page":"*","response":"html","template":"chat.html","multiPage":true,"multiSession":false,"segments":[segment1Id,segment2Id]}
-          ], function(err, actions){
+            {
+              "siteId":site._id,
+              "name" : "Title interest template",
+              "responsedatalocation" : "http://numero-ph.thisisnumero.internal:5052/template.html",
+              "responsedatafrom" : "uri",
+              "responsetype" : "template",
+              "page" : "",
+              "type" : "and",
+              "events" : []
+          }], function(err, actions){
+            var action1Id = actions[0]._id;
 
-            UserSession.create([
-              {"completedActions":[]},
-              {"completedActions":[]}
-            ], function(err, usersessions){
-              var usersession1Id = usersessions[0]._id;
-              var usersession2Id = usersessions[1]._id;
-              usersession2 = usersessions[1];
+            Hopup.create([{
+              "siteId":site._id,
+              "name": "blah",
+              "actions" : [action1Id],
+              "segments":[segment1Id,segment2Id]
+            }], function(err, hopups){
 
-              SiteUser.create([
-                {"siteId":site._id,currentSessionId:usersession1Id,lastActive:lastActive},
-                {"siteId":site._id,currentSessionId:usersession2Id,lastActive:lastActive}
-              ], function(err, siteusers){
-                user1 = siteusers[0];
-                user2 = siteusers[1];
+              UserSession.create([
+                {"completedActions":[]},
+                {"completedActions":[]}
+              ], function(err, usersessions){
+                var usersession1Id = usersessions[0]._id;
+                var usersession2Id = usersessions[1]._id;
+                usersession2 = usersessions[1];
 
-                SessionData.create([
-                  {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
-                  {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
-                  {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
-                  {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
-                  {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
-                  {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}}
-                ], function(err, sessiondatas){
+                SiteUser.create([
+                  {"siteId":site._id,currentSessionId:usersession1Id,lastActive:lastActive},
+                  {"siteId":site._id,currentSessionId:usersession2Id,lastActive:lastActive}
+                ], function(err, siteusers){
+                  user1 = siteusers[0];
+                  user2 = siteusers[1];
 
-                  done();
+                  usersessions[0].user = user1._id;
+                  usersessions[0].save();
+
+                  usersessions[1].user = user1._id;
+                  usersessions[1].save();
+
+                  SessionData.create([
+                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
+                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
+                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
+                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
+                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
+                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}}
+                  ], function(err, sessiondatas){
+
+                    done();
+                  });
                 });
-
               });
-
             });
-
           });
-
         });
       });
-
-    })
+    });
 
   });
 
   afterEach(function(done) {
     console.log('after each');
-    connection.connection.db.dropDatabase();
+    //connection.connection.db.dropDatabase();
     done();
   });
 
   it("should return the correct actions for the correct usersession", function(done) {
       var rulesEngine = new RulesEngine();
       rulesEngine.getClientActions(user1).then(function(actions){
+        console.log('acts', actions);
         expect(actions.length == 1).toBe(true);
         //The second time we get client actions for the same session we dont send any events back - it has already been fired.
         rulesEngine.getClientActions(user1).then(function(actions){

@@ -1,4 +1,5 @@
 var Q = require('q');
+var logger = require('./lib/logger').create("ACTIONS GETTER");
 
 var actionsGetter = function (rulesEngineData) {
   this.actions = rulesEngineData.actions;
@@ -13,14 +14,15 @@ actionsGetter.prototype = {
   getHopupsToPerform: function(){
     var self = this;
     var deferred = Q.defer();
-    this.checkActions().then(function(hopups){
+    this.checkHopups().then(function(hopups){
       self.filterPerformedHopups(hopups).then(function(hopups){
         deferred.resolve(hopups);
       });
     });
     return deferred.promise;
   },
-  checkActions: function(){
+  checkHopups: function(){
+    logger.info('checkHopups', this.hopups);
     var deferred = Q.defer();
     var self = this;
 
@@ -32,16 +34,19 @@ actionsGetter.prototype = {
     //}
 
     for (var i = 0; i < this.hopups.length; i++){
-      promises.push(this.checkAction(this.hopups[i]))
+      promises.push(this.checkHopup(this.hopups[i]))
     }
 
     Q.all(promises).then(function(hopups){
+      logger.info('checkHopups all resolved', hopups);
       deferred.resolve(hopups);
     });
 
     return deferred.promise;
   },
-  checkAction: function(hopup){
+  checkHopup: function(hopup){
+    logger.info('checkHopup', hopup);
+
     var deferred = Q.defer();
     var segmentCriteriaMet = [];
     var promises = [];
@@ -51,6 +56,7 @@ actionsGetter.prototype = {
     }
 
     Q.all(promises).then(function(segmentCriteriaMet){
+      logger.info('checkHopup all resolved', segmentCriteriaMet);
       if (segmentCriteriaMet.length > 0 && segmentCriteriaMet.indexOf(false) < 0){
         deferred.resolve(hopup);
       } else {
@@ -64,6 +70,8 @@ actionsGetter.prototype = {
     return Q(this.plugins[segment.listen](this.sessionData, segment, user, this.userSession));
   },
   filterPerformedHopups: function(hopups){
+    logger.info('filterPerformedHopups', this.currentUserSession);
+
     var deferred = Q.defer();
     var userSession = this.currentUserSession;
     var clientHopups = [];
@@ -74,7 +82,7 @@ actionsGetter.prototype = {
           clientHopups.push(hopups[i]);
       }
     }
-
+    logger.info('filterPerformedHopups returning', clientHopups);
     deferred.resolve(clientHopups);
     return deferred.promise;
   },
