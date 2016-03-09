@@ -6,11 +6,9 @@ var Event = require('./models/event');
 var Segment = require('./models/segment');
 var Action = require('./models/action');
 var SessionData = require('./models/sessiondata');
-var SiteUser = require('./models/siteuser');
-var UserSession = require('./models/usersession');
 
 var UserManager = require('./usermanager');
-var userManager = new UserManager(SiteUser, UserSession);
+var userManager = new UserManager();
 
 var RulesEngine = require('./rulesengine');
 var rulesEngine = new RulesEngine();
@@ -55,25 +53,7 @@ router.post('/sync', function(req, res) {
 
       }
 
-      if (dataQ.length > 0){
-        //user has acted to set last action to now
-        userManager.resetLastActive(user).then(function(){
-
-          //should we fire any events on the client
-          rulesEngine.getClientActions(user).then(function(actions){
-            res.send({
-              'user': user,
-              'actions': actions
-            });
-          });
-
-        });
-
-
-      } else {
-        //we still check if we should fire events on the client
-        //as some events are not prompted by user actions but, for instance, by lack of user action - inactive action.
-        //should we fire without any events from the client
+      var sendResponce = function(user){
         rulesEngine.getClientActions(user).then(function(actions){
           res.send({
             'user': user,
@@ -81,7 +61,23 @@ router.post('/sync', function(req, res) {
           });
         });
       }
+
+      if (dataQ.length > 0){
+        //user has acted to set last action to now
+        userManager.resetLastActive(user).then(function(){
+          //should we fire any events on the client
+          sendResponce(user);
+        });
+      } else {
+        //we still check if we should fire events on the client
+        //as some events are not prompted by user actions but, for instance, by lack of user action - inactive action.
+        //should we fire without any events from the client
+        sendResponce(user);
+      }
   });
 });
+
+
+
 
 module.exports = router;

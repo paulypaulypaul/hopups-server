@@ -1,9 +1,9 @@
 var Q = require('q');
 var User = require('./user');
+var SiteUser = require('./models/siteuser');
+var UserSession = require('./models/usersession');
 
-var usermanager = function (siteUserDb, userSessionDb) {
-  this.siteUserDb = siteUserDb;
-  this.userSessionDb = userSessionDb;
+var usermanager = function () {
 };
 
 usermanager.prototype = {
@@ -11,7 +11,7 @@ usermanager.prototype = {
     var self = this;
     var deferred = Q.defer();
 
-    this.find(id, siteId).then(function(user){
+    this.findUser(id, siteId).then(function(user){
       if (!user){
         self.createNewUser(siteId).then(function(user){
           deferred.resolve(user);
@@ -19,7 +19,7 @@ usermanager.prototype = {
       } else {
         //we have a user
         //now we check if the session is 'old' and create a new one if needed
-        self.userSessionDb.findOne({_id: user.currentSessionId}, function(err, userSession){
+        UserSession.findOne({_id: user.currentSessionId}, function(err, userSession){
           //hard coded hour session - obs parametise
           var nowMinusHour = new Date();
           nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 1);
@@ -45,16 +45,16 @@ usermanager.prototype = {
     });
     return deferred.promise;
   },
-  find: function(id, siteId){
+  findUser: function(id, siteId){
     var deferred = Q.defer();
-    this.siteUserDb.findOne({_id : id, siteId: siteId}, function(err, user){
+    SiteUser.findOne({_id : id, siteId: siteId}, function(err, user){
       deferred.resolve(user);
     });
     return deferred.promise;
   },
   update: function(user){
     var deferred = Q.defer();
-    this.siteUserDb.update({_id : user._id, siteId : user.siteId}, user, { upsert: true }, function(err, numUpdated, user){
+    SiteUser.update({_id : user._id, siteId : user.siteId}, user, { upsert: true }, function(err, numUpdated, user){
       //force array at this point as new items are single but updated items come back in array
       user = [].concat(user);
       deferred.resolve(user[0]);
@@ -65,7 +65,7 @@ usermanager.prototype = {
     var self = this;
     var deferred = Q.defer();
 
-    var userSession = new this.userSessionDb();
+    var userSession = new UserSession()
 
     userSession.save(function(err, userSession) {
       if (err) return console.error(err);
@@ -86,7 +86,7 @@ usermanager.prototype = {
                                                                  // Number Families - By Georgina Harland.
     return deferred.promise;                                     //  3 + 6 = 9    6 + 3 = 9
   },
-  resetLastActive: function(user){                               //   9 - 3 = 6   9 - 6 = 3
+  resetLastActive: function(user){                              //   9 - 3 = 6   9 - 6 = 3
     var deferred = Q.defer();
 
     user.lastActive = new Date().getTime();
