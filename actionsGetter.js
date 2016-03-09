@@ -22,7 +22,7 @@ actionsGetter.prototype = {
     return deferred.promise;
   },
   checkHopups: function(){
-    logger.info('checkHopups', this.hopups);
+    logger.info('checkHopups', this.hopups.length);
     var deferred = Q.defer();
     var self = this;
 
@@ -38,14 +38,14 @@ actionsGetter.prototype = {
     }
 
     Q.all(promises).then(function(hopups){
-      logger.info('checkHopups all resolved', hopups);
+      logger.info('checkHopups all resolved', hopups.length);
       deferred.resolve(hopups);
     });
 
     return deferred.promise;
   },
   checkHopup: function(hopup){
-    logger.info('checkHopup', hopup);
+    logger.info('checkHopup');
 
     var deferred = Q.defer();
     var segmentCriteriaMet = [];
@@ -70,7 +70,7 @@ actionsGetter.prototype = {
     return Q(this.plugins[segment.listen](this.sessionData, segment, user, this.userSession));
   },
   filterPerformedHopups: function(hopups){
-    logger.info('filterPerformedHopups', this.currentUserSession);
+    logger.info('filterPerformedHopups', hopups.length);
 
     var deferred = Q.defer();
     var userSession = this.currentUserSession;
@@ -82,7 +82,7 @@ actionsGetter.prototype = {
           clientHopups.push(hopups[i]);
       }
     }
-    logger.info('filterPerformedHopups returning', clientHopups);
+    logger.info('filterPerformedHopups returning', clientHopups.length);
     deferred.resolve(clientHopups);
     return deferred.promise;
   },

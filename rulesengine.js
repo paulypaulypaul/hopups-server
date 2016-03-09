@@ -27,10 +27,9 @@ rulesEngine.prototype = {
 
       var actionsGetter = new ActionsGetter(rulesEngineData);
       actionsGetter.getHopupsToPerform().then(function(hopups){
-        console.log('hopups to return first - ', hopups);
-        self.updateClientSession(user, hopups, rulesEngineData.currentUserSession).then(function(){
-          console.log('hopups to return - ', hopups);
+        logger.info('hopups to perform', hopups.length);
 
+        self.updateClientSession(user, hopups, rulesEngineData.currentUserSession).then(function(){
 
           var actions = []
           //if multiple actions on the hopup randomly choose which one to send
@@ -130,7 +129,8 @@ rulesEngine.prototype = {
 
 
     Q.all([sessionDataDeferred.promise, segmentDeferred.promise, currentUserSessionDeferred.promise, userSessionDeferred.promise, actionDeferred.promise, hopupsDeferred.promise]).then(function(result){
-      logger.info('collectData', {
+
+      /*logger.info('collectData', {
         sessionData: result[0],
         segments: result[1],
         currentUserSession: result[2],
@@ -138,7 +138,8 @@ rulesEngine.prototype = {
         actions: result[4],
         hopups: result[5],
         user: user
-      });
+      });*/
+
       deferred.resolve({
         sessionData: result[0],
         segments: result[1],

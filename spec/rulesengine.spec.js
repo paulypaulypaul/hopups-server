@@ -109,7 +109,6 @@ describe("Rules engine tests", function() {
   it("should return the correct actions for the correct usersession", function(done) {
       var rulesEngine = new RulesEngine();
       rulesEngine.getClientActions(user1).then(function(actions){
-        console.log('acts', actions);
         expect(actions.length == 1).toBe(true);
         //The second time we get client actions for the same session we dont send any events back - it has already been fired.
         rulesEngine.getClientActions(user1).then(function(actions){
