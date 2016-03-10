@@ -10,6 +10,11 @@ var Action = require('./models/action');
 var Hopup = require('./models/hopup');
 var SessionData = require('./models/sessiondata');
 var ActionSessionData = require('./models/actionsessiondata');
+
+var UserSession = require('./models/usersession');
+var SiteUser = require('./models/siteuser');
+
+
 var verifyFacebookUserAccessToken = require('./verifyFacebookUserAccessToken');
 var SiteInitialiser = require('./siteInitialiser');
 var siteInitialiser = new SiteInitialiser();
@@ -102,7 +107,33 @@ router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, 
               .exec(function(err, sessiondata){
                 res.send(sessiondata);
               });
-            }
+            } else if (type === 'siteuser'){
+              SiteUser.aggregate([
+                { $match : { siteId : mongoose.Types.ObjectId(req.params.siteId) }},
+                { $lookup: {
+                    from: 'usersessions',
+                    localField: '_id',
+                    foreignField: 'user',
+                    as: 'usersessions'
+                  }
+                },
+                { $lookup: {
+                    from: 'sessiondatas',
+                    localField: '_id',
+                    foreignField: 'userId',
+                    as: 'sessiondata'
+                  }
+                }
+              ], function(err, siteuser){
+                res.send(siteuser);
+              });
+              //SiteUser.find({ siteId : req.params.siteId })
+              //.populate('segments')
+              //.exec(function(err, siteuser){
+            //    res.send(siteuser);
+            //  });
+            };
+
         }
 
 

@@ -5,10 +5,11 @@ var Schema       = mongoose.Schema;
 
 
 var SiteUserSchema = new Schema({
-        siteId: String,
-        lastActive: String,
+        siteId: { type: Schema.Types.ObjectId, ref: 'Site' },
+        lastActive: { type: Date, default: Date.now },
         bfps: [String],
-        currentSessionId: String
+        currentSessionId: { type: Schema.Types.ObjectId, ref: 'UserSession' },
+        currentPhoneNumberAllocation: { type: Schema.Types.ObjectId, ref: 'PhoneNumberAllocation' }
     });
 
 

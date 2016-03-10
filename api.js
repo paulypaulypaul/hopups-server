@@ -25,8 +25,7 @@ router.post('/sync', function(req, res) {
   var dataQ = req.body.dataQ;
 
   userManager.findOrCreateUserById(payloadUserId, siteId).then(function(user){
-
-      console.log(user);
+    userManager.allocatePhoneNumber(user).then(function(user){
 
       for (var i = 0 ; i < dataQ.length; i++){
         var dataItem = dataQ[i];
@@ -74,6 +73,8 @@ router.post('/sync', function(req, res) {
         //should we fire without any events from the client
         sendResponce(user);
       }
+
+    });
   });
 });
 
