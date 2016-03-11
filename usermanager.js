@@ -9,6 +9,8 @@ var PhoneNumberAllocation = require('./models/phonenumberallocation');
 
 var schedule = require('node-schedule');
 
+var logger = require('./lib/logger').create("USERMANAGER");
+
 var reapSite = function(site){
   console.log('site reaping', site._id);
 
@@ -74,6 +76,8 @@ usermanager.prototype = {
 
             var numberToAllocate =  self.getNextPhoneNumber(site);
 
+            logger.info('numberToAllocate' numberToAllocate);
+
             if (numberToAllocate){
               site.allocatedPhoneNumbers.push(numberToAllocate);
               site.save(function(err, site){
@@ -97,6 +101,7 @@ usermanager.prototype = {
                 });
               });
             } else {
+                logger.info('no number to allocate return user');
                 deferred.resolve(user);
             }
 
@@ -126,6 +131,8 @@ usermanager.prototype = {
     return deferred.promise;
   },
   getNextPhoneNumber: function(site){
+    logger.info('getNextPhoneNumber for site' site);
+
     var phoneNumbers = site.phoneNumbers.split(',');
     for (var i=0; i < phoneNumbers.length; i++){
       if (site.allocatedPhoneNumbers.indexOf(phoneNumbers[i]) < 0){
