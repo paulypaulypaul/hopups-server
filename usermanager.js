@@ -131,7 +131,7 @@ usermanager.prototype = {
     return deferred.promise;
   },
   getNextPhoneNumber: function(site){
-    logger.info('getNextPhoneNumber for site' site);
+    logger.info('getNextPhoneNumber for site', site);
 
     var phoneNumbers = site.phoneNumbers.split(',');
     for (var i=0; i < phoneNumbers.length; i++){
