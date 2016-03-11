@@ -123,6 +123,13 @@ router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, 
                     foreignField: 'userId',
                     as: 'sessiondata'
                   }
+                },
+                { $lookup: {
+                    from: 'phonenumberallocations',
+                    localField: 'currentPhoneNumberAllocation',
+                    foreignField: '_id',
+                    as: 'currentPhoneNumberAllocation'
+                  }
                 }
               ], function(err, siteuser){
                 res.send(siteuser);

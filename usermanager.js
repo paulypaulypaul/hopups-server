@@ -48,7 +48,7 @@ var reapSite = function(site){
   }
 }
 
-schedule.scheduleJob('*/1 * * * *', function(){
+schedule.scheduleJob('*/10 * * * * *', function(){
   Site.find({}, function(err, sites){
     for (var i = 0; i < sites.length; i++){
       reapSite(sites[i])
@@ -96,6 +96,8 @@ usermanager.prototype = {
                   });
                 });
               });
+            } else {
+                deferred.resolve(user);
             }
 
           });
