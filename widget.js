@@ -32,10 +32,10 @@ router.get('/:id', function(req, res) {
 
               config.events = events;
 
-              Hopup
+              /*Hopup
               .find({siteId : site._id}, { actions: 1, events: 1})
               .exec(function(err, hopups){
-                  config.hopups = hopups;
+                  config.hopups = hopups;*/
 
                   data = data.replace(/\[%CONFIG%\]/gi,
                     JSON.stringify({
@@ -48,7 +48,7 @@ router.get('/:id', function(req, res) {
                   res.write(data)
                   res.end();
 
-              });
+            /*  });*/
             });
           });
         }
