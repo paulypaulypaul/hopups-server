@@ -76,7 +76,7 @@ usermanager.prototype = {
 
             var numberToAllocate =  self.getNextPhoneNumber(site);
 
-            logger.info('numberToAllocate' numberToAllocate);
+            logger.info('numberToAllocate', numberToAllocate);
 
             if (numberToAllocate){
               site.allocatedPhoneNumbers.push(numberToAllocate);
