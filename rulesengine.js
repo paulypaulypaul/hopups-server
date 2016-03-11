@@ -11,7 +11,7 @@ var Site = require('./models/site');
 var Hopup = require('./models/hopup');
 var ActionSessionData = require('./models/actionsessiondata')
 
-var ActionsGetter = require('./actionsgetter')
+var ActionsGetter = require('./actionsgetters')
 
 var logger = require('./lib/logger').create("RULES ENGINE");
 
