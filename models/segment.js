@@ -11,6 +11,8 @@ var SegmentSchema = new Schema({
         listen: String,
         tag: String,
         threshold: String,
+        key: String,
+        value: String,
         active: { type: Boolean, default: true },
         system: { type: Boolean, default: false }
     });

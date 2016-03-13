@@ -81,6 +81,9 @@ $( document ).ready(function() {
       }
       return 0;
     },
+    getQueryString: function(){
+      return window.location.href.split('?')[1];
+    },
     attachHTML: function(item){
       var self = this;
 
@@ -281,7 +284,8 @@ $( document ).ready(function() {
       var data = {
         userId: 'none',
         siteId: self._siteId,
-        dataQ: currentDataQ
+        dataQ: currentDataQ,
+        queryString: self.getQueryString()
       }
 
       if (sessionData.data){
