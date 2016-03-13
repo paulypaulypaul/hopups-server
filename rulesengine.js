@@ -102,7 +102,7 @@ rulesEngine.prototype = {
           var currentUserSession;
 
           for (var i =0; i < userSession.length; i++){
-            if (userSession[i]._id.equals(user.currentSessionId)){
+            if (userSession[i]._id.equals(user.currentSessionId._id)){
               currentUserSession = userSession[i];
             }
           }

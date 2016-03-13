@@ -141,6 +141,22 @@ usermanager.prototype = {
     }
     return false;
   },
+  addQueryStringToUserSession: function(user, queryString){
+    var deferred = Q.defer();
+
+    var obj = {};
+    var qsarray = queryString.split('&');
+    for (var i = 0; i < qsarray.length; i++){
+      var item = qsarray[i].split('=');
+      obj[item[0]] = item[1];
+    }
+    user.currentSessionId.queryString = obj;
+    user.currentSessionId.save(function(err, userSession){
+        deferred.resolve(user);
+    });
+    
+    return deferred.promise;
+  },
   findOrCreateUserById: function(id, siteId){
     var self = this;
     var deferred = Q.defer();
@@ -166,7 +182,11 @@ usermanager.prototype = {
 
               user.save(function(err, user) {
                   if (err) return console.error(err);
-                  deferred.resolve(user);
+
+                  SiteUser.populate(user, {path:"currentSessionId"}, function(err, user) {
+                    deferred.resolve(user);
+                  });
+
               });
 
             });
@@ -181,9 +201,12 @@ usermanager.prototype = {
   },
   findUser: function(id, siteId){
     var deferred = Q.defer();
-    SiteUser.findOne({_id : id, siteId: siteId}, function(err, user){
-      deferred.resolve(user);
-    });
+    SiteUser
+      .findOne({_id : id, siteId: siteId})
+      .populate('currentSessionId')
+      .exec(function(err, user){
+        deferred.resolve(user);
+      });
     return deferred.promise;
   },
   update: function(user){

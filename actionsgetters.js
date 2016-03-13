@@ -120,6 +120,14 @@ actionsGetter.prototype = {
         return Q(true);
       }
       return Q(false);
+    },
+    querystring: function(sessionData, segment, user, userSessions){
+      if (user.currentSessionId.queryString && user.currentSessionId.queryString[segment.key] ){
+        if (user.currentSessionId.queryString[segment.key] == segment.value){
+          return Q(true);
+        }
+      }
+      return Q(false);
     }
   }
 };

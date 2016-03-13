@@ -10,6 +10,7 @@ var SiteUser = require('./siteuser');
 var UserSessionSchema = new Schema({
       completedActions: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
       completedHopups: [{ type: Schema.Types.ObjectId, ref: 'Hopup' }],
+      queryString: {},
       user : { type: Schema.Types.ObjectId, ref: 'SiteUser' },
       date: { type: Date, default: Date.now }
     });
