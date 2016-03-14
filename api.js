@@ -1,10 +1,6 @@
 var express = require('express');
 var router = express.Router();
 
-var mongoose   = require('mongoose');
-var Event = require('./models/event');
-var Segment = require('./models/segment');
-var Action = require('./models/action');
 var SessionData = require('./models/sessiondata');
 
 var UserManager = require('./usermanager');
