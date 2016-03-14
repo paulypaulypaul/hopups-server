@@ -71,7 +71,7 @@ actionsGetter.prototype = {
 
     for (var i = 0; i < matchingHopups.length; i++){
       //we have to check for undefineds here
-      if (matchingHopups[i] && user.currentSessionId.completedHopups.indexOf(matchingHopups[i]._id) < 0){
+      if (matchingHopups[i] && user.currentSession.completedHopups.indexOf(matchingHopups[i]._id) < 0){
           matchingAndFilteredHopups.push(matchingHopups[i]);
       }
     }
@@ -123,8 +123,8 @@ actionsGetter.prototype = {
       return Q(false);
     },
     querystring: function(segment, user){
-      if (user.currentSessionId.queryString && user.currentSessionId.queryString[segment.key] ){
-        if (user.currentSessionId.queryString[segment.key] == segment.value){
+      if (user.currentSession.queryString && user.currentSession.queryString[segment.key] ){
+        if (user.currentSession.queryString[segment.key] == segment.value){
           return Q(true);
         }
       }

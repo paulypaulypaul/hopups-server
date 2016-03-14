@@ -42,7 +42,7 @@ rulesEngine.prototype = {
                       "datetime"  : new Date(),
 
                       "userId"    : user._id,
-                      "sessionId" : user.currentSessionId,
+                      "sessionId" : user.currentSession,
                       "siteId"    : user.siteId,
                       "action"    : action._id,
                       "hopup"     : hopupsToPerform[i]._id
@@ -98,7 +98,7 @@ rulesEngine.prototype = {
       }
     ], function(err, user){
       //returns 1 item array so use first item
-      SiteUser.populate(user[0], {path:"currentSessionId"}, function(err, user) {
+      SiteUser.populate(user[0], {path:"currentSession"}, function(err, user) {
         deferred.resolve(user);
       });
     });
@@ -132,10 +132,10 @@ rulesEngine.prototype = {
   updateClientSession: function(user, hopups){
     var deferred = Q.defer();
     for (var i = 0; i < hopups.length; i++){
-      user.currentSessionId.completedHopups.push(hopups[i]._id);
+      user.currentSession.completedHopups.push(hopups[i]._id);
     }
-    user.currentSessionId.save(function(currentSession){
-      user.currentSessionId = currentSession;
+    user.currentSession.save(function(currentSession){
+      user.currentSession = currentSession;
       deferred.resolve();
     })
     return deferred.promise;

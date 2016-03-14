@@ -67,8 +67,8 @@ describe("Rules engine tests", function() {
                 usersession2 = usersessions[1];
 
                 SiteUser.create([
-                  {"siteId":site._id,currentSessionId:usersession1Id,lastActive:lastActive},
-                  {"siteId":site._id,currentSessionId:usersession2Id,lastActive:lastActive}
+                  {"siteId":site._id,currentSession:usersession1Id,lastActive:lastActive},
+                  {"siteId":site._id,currentSession:usersession2Id,lastActive:lastActive}
                 ], function(err, siteusers){
                   user1 = siteusers[0];
                   user2 = siteusers[1];
@@ -115,7 +115,7 @@ describe("Rules engine tests", function() {
           expect(actions.length == 0).toBe(true)
           //we then get client actions with a new session id so if the sesion/
           //events exsist for that session we get actions back
-          user1.currentSessionId = usersession2._id;
+          user1.currentSession = usersession2._id;
           rulesEngine.getClientActions(user1).then(function(actions){
             expect(actions.length == 1).toBe(true)
             //console.log(1)

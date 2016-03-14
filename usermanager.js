@@ -150,11 +150,11 @@ usermanager.prototype = {
       var item = qsarray[i].split('=');
       obj[item[0]] = item[1];
     }
-    user.currentSessionId.queryString = obj;
-    user.currentSessionId.save(function(err, userSession){
+    user.currentSession.queryString = obj;
+    user.currentSession.save(function(err, userSession){
         deferred.resolve(user);
     });
-    
+
     return deferred.promise;
   },
   findOrCreateUserById: function(id, siteId){
@@ -169,7 +169,7 @@ usermanager.prototype = {
       } else {
         //we have a user
         //now we check if the session is 'old' and create a new one if needed
-        UserSession.findOne({_id: user.currentSessionId}, function(err, userSession){
+        UserSession.findOne({_id: user.currentSession}, function(err, userSession){
           //hard coded hour session - obs parametise
           var nowMinusHour = new Date();
           nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 1);
@@ -178,12 +178,12 @@ usermanager.prototype = {
             var userSession = new UserSession();
             userSession.user = user._id;
             userSession.save(function(err, userSession) {
-              user.currentSessionId = userSession._id;
+              user.currentSession = userSession._id;
 
               user.save(function(err, user) {
                   if (err) return console.error(err);
 
-                  SiteUser.populate(user, {path:"currentSessionId"}, function(err, user) {
+                  SiteUser.populate(user, {path:"currentSession"}, function(err, user) {
                     deferred.resolve(user);
                   });
 
@@ -203,7 +203,7 @@ usermanager.prototype = {
     var deferred = Q.defer();
     SiteUser
       .findOne({_id : id, siteId: siteId})
-      .populate('currentSessionId')
+      .populate('currentSession')
       .exec(function(err, user){
         deferred.resolve(user);
       });
@@ -229,7 +229,7 @@ usermanager.prototype = {
 
       var user = new SiteUser({
         siteId : siteId,
-        currentSessionId: userSession._id
+        currentSession: userSession._id
       });
 
       userSession.user = user._id;

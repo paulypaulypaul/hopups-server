@@ -37,7 +37,7 @@ router.post('/sync', function(req, res) {
             "datetime"  : new Date(),
 
             "userId"    : user._id,
-            "sessionId" : user.currentSessionId.id,
+            "sessionId" : user.currentSession.id,
             "siteId"    : siteId,
 
             "context"   : dataItem.context
