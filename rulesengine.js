@@ -5,6 +5,7 @@ var SiteUser = require('./models/siteuser');
 var Site = require('./models/site');
 var Hopup = require('./models/hopup');
 var ActionSessionData = require('./models/actionsessiondata')
+var SessionData = require('./models/sessiondata');
 
 var ActionsGetter = require('./actionsgetters')
 
@@ -20,6 +21,8 @@ rulesEngine.prototype = {
 
     this.populateUser(user).then(function(user){
       self.populateSite(user).then(function(site){
+        logger.info('£££££££££££££££££££££££££', user, site);
+
           var actionsGetter = new ActionsGetter(user, site);
           actionsGetter.getHopupsToPerform().then(function(hopupsToPerform){
             logger.info('hopups to perform', hopupsToPerform.length);
@@ -74,14 +77,14 @@ rulesEngine.prototype = {
           from: 'usersessions',
           localField: '_id',
           foreignField: 'user',
-          as: 'usersessions'
+          as: 'userSessions'
         }
       },
       { $lookup: {
           from: 'sessiondatas',
           localField: '_id',
           foreignField: 'userId',
-          as: 'sessiondata'
+          as: 'sessionData'
         }
       },
       { $lookup: {
@@ -94,7 +97,10 @@ rulesEngine.prototype = {
     ], function(err, user){
       //returns 1 item array so use first item
       SiteUser.populate(user[0], {path:"currentSession"}, function(err, user) {
-        deferred.resolve(user);
+        SessionData.populate(user.sessionData, {path:"event"}, function(err, sessionData){
+          user.sessionData = sessionData;
+          deferred.resolve(user);
+        });
       });
     });
     return deferred.promise;

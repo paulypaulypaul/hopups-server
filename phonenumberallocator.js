@@ -17,6 +17,8 @@ phonenumberallocator.prototype = {
     var self = this;
     var deferred = Q.defer();
 
+    logger.info('Trying to allocate phone number for', user);
+
       //if the record is not really there when we try to populate it will be null
       SiteUser.populate(user, {path: 'currentPhoneNumberAllocation'}, function(err, user){
 

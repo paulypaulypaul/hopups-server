@@ -39,13 +39,14 @@ actionsGetter.prototype = {
     return deferred.promise;
   },
   checkHopup: function(hopup, user){
-    logger.info('checkHopup');
+    logger.info('checkHopup', hopup.segments);
 
     var deferred = Q.defer();
     var segmentCriteriaMet = [];
     var promises = [];
 
     for (var j = 0; j < hopup.segments.length; j++){
+      console.log('pooooooo')
       promises.push(this.checkIfSegmentCriteriaMet(hopup.segments[j], user));
     }
 
@@ -61,6 +62,7 @@ actionsGetter.prototype = {
     return deferred.promise;
   },
   checkIfSegmentCriteriaMet: function(segment, user){
+    logger.info('check if segment criteria met', segment.listen);
     return Q(this.plugins[segment.listen](segment, user));
   },
   filterPerformedHopups: function(matchingHopups, user){
@@ -91,19 +93,24 @@ actionsGetter.prototype = {
       var deferred = Q.defer();
       var tags = {}
 
+      logger.info('Interest plugin fired');
+
       //need to add single session support - we calc for all sessions
       //single sesison would only look at the current session datas.
 
       for (var i = 0; i < user.sessionData.length; i++){
         //some session data events dont have tags - we need to properly divide thiese up - this for now
-        if (sessionData[i].event){
-          var tag = sessionData[i].event.tag;
+        if (user.sessionData[i].event){
+          var tag = user.sessionData[i].event.tag;
+          logger.info('tag', user.sessionData[i]);
           if (!tags[tag]){
             tags[tag] = 0;
           }
           tags[tag]++;
         }
       }
+
+      logger.info('Interest plugin testing', tags[segment.tag], segment.threshold);
 
       deferred.resolve(tags[segment.tag] >= segment.threshold);
       return deferred.promise;

@@ -1,6 +1,5 @@
 var RulesEngine = require('../rulesengine');
 var mongoose   = require('mongoose');
-var connection = mongoose.connect('mongodb://localhost/hopups-test');
 
 var Event = require('../models/event');
 var Segment = require('../models/segment');
@@ -16,79 +15,83 @@ describe("Rules engine tests", function() {
   var user1;
   var user2;
   var usersession2;
+  var connection;
+  var now = new Date();
+  var lastActive = now.setSeconds(now.getSeconds() - 15);
 
   beforeEach(function(done) {
-    var now = new Date()
-    var lastActive = now.setSeconds(now.getSeconds() - 15);
-    Site.create([
-      {name: 'test'}
-    ], function(err, sites){
-      site = sites[0];
-      Event.create([
-        {"siteId":site._id,"page":"*","selector":"h1","event":"click","message":"title clicked","tag":"title"},
-        {"siteId":site._id,"page":"*","selector":"body","event":"initialpageload","message":"initialpageload"},
-        {"siteId":site._id,"page":"*","selector":"body","event":"eventfired","message":"eventfired"},
-        {"siteId":site._id,"page":"*","selector":"#applynow","event":"click","message":"apply now cicked"}
-      ], function(err, events){
+    connection = mongoose.connect('mongodb://localhost/hopups-test', function(){
 
-        Segment.create([
-          {"siteId":site._id,"page":"*","listen":"interest","tag":"title","threshold":3},
-          {"siteId":site._id,"page":"*","listen":"inactive","threshold":10}
-        ], function(err, segments){
-          var segment1Id = segments[0]._id;
-          var segment2Id = segments[1]._id;
+      Site.create([
+        {name: 'test'}
+      ], function(err, sites){
+        site = sites[0];
+        Event.create([
+          {"siteId":site._id,"page":"*","selector":"h1","event":"click","message":"title clicked","tag":"title"},
+          {"siteId":site._id,"page":"*","selector":"body","event":"initialpageload","message":"initialpageload"},
+          {"siteId":site._id,"page":"*","selector":"body","event":"eventfired","message":"eventfired"},
+          {"siteId":site._id,"page":"*","selector":"#applynow","event":"click","message":"apply now cicked"}
+        ], function(err, events){
 
-          Action.create([
-            {
-              "siteId":site._id,
-              "name" : "Title interest template",
-              "responsedatalocation" : "http://numero-ph.thisisnumero.internal:5052/template.html",
-              "responsedatafrom" : "uri",
-              "responsetype" : "template",
-              "page" : "",
-              "type" : "and",
-              "events" : []
-          }], function(err, actions){
-            var action1Id = actions[0]._id;
+          Segment.create([
+            {"siteId":site._id,"page":"*","listen":"interest","tag":"title","threshold":3},
+            {"siteId":site._id,"page":"*","listen":"inactive","threshold":10}
+          ], function(err, segments){
+            var segment1Id = segments[0]._id;
+            var segment2Id = segments[1]._id;
 
-            Hopup.create([{
-              "siteId":site._id,
-              "name": "blah",
-              "actions" : [action1Id],
-              "segments":[segment1Id,segment2Id]
-            }], function(err, hopups){
+            Action.create([
+              {
+                "siteId":site._id,
+                "name" : "Title interest template",
+                "responsedatalocation" : "http://numero-ph.thisisnumero.internal:5052/template.html",
+                "responsedatafrom" : "uri",
+                "responsetype" : "template",
+                "page" : "",
+                "type" : "and",
+                "events" : []
+            }], function(err, actions){
+              var action1Id = actions[0]._id;
 
-              UserSession.create([
-                {"completedActions":[]},
-                {"completedActions":[]}
-              ], function(err, usersessions){
-                var usersession1Id = usersessions[0]._id;
-                var usersession2Id = usersessions[1]._id;
-                usersession2 = usersessions[1];
+              Hopup.create([{
+                "siteId":site._id,
+                "name": "blah",
+                "actions" : [action1Id],
+                "segments":[segment1Id,segment2Id]
+              }], function(err, hopups){
 
-                SiteUser.create([
-                  {"siteId":site._id,currentSession:usersession1Id,lastActive:lastActive},
-                  {"siteId":site._id,currentSession:usersession2Id,lastActive:lastActive}
-                ], function(err, siteusers){
-                  user1 = siteusers[0];
-                  user2 = siteusers[1];
+                UserSession.create([
+                  {"completedActions":[]},
+                  {"completedActions":[]}
+                ], function(err, usersessions){
+                  var usersession1Id = usersessions[0]._id;
+                  var usersession2Id = usersessions[1]._id;
+                  usersession2 = usersessions[1];
 
-                  usersessions[0].user = user1._id;
-                  usersessions[0].save();
+                  SiteUser.create([
+                    {"siteId":site._id,currentSession:usersession1Id,lastActive:lastActive},
+                    {"siteId":site._id,currentSession:usersession2Id,lastActive:lastActive}
+                  ], function(err, siteusers){
+                    user1 = siteusers[0];
+                    user2 = siteusers[1];
 
-                  usersessions[1].user = user1._id;
-                  usersessions[1].save();
+                    usersessions[0].user = user1._id;
+                    usersessions[0].save();
 
-                  SessionData.create([
-                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
-                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
-                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
-                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
-                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
-                    {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}}
-                  ], function(err, sessiondatas){
+                    usersessions[1].user = user1._id;
+                    usersessions[1].save();
 
-                    done();
+                    SessionData.create([
+                      {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
+                      {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
+                      {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession1Id,"context":{"location":"/"}},
+                      {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
+                      {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}},
+                      {"type":"event","siteId":site._id,"event":events[0]._id,"userId":siteusers[0]._id,"sessionId":usersession2Id,"context":{"location":"/"}}
+                    ], function(err, sessiondatas){
+
+                      done();
+                    });
                   });
                 });
               });
@@ -96,14 +99,19 @@ describe("Rules engine tests", function() {
           });
         });
       });
+
+
     });
 
   });
 
   afterEach(function(done) {
     console.log('after each');
-    //connection.connection.db.dropDatabase();
-    done();
+    connection.connection.db.dropDatabase();
+    mongoose.connection.close(function () {
+      console.log('Mongoose disconnected on app termination');
+      done();
+    });
   });
 
   it("should return the correct actions for the correct usersession", function(done) {
@@ -112,14 +120,16 @@ describe("Rules engine tests", function() {
         expect(actions.length == 1).toBe(true);
         //The second time we get client actions for the same session we dont send any events back - it has already been fired.
         rulesEngine.getClientActions(user1).then(function(actions){
-          expect(actions.length == 0).toBe(true)
+          expect(actions.length == 0).toBe(true);
           //we then get client actions with a new session id so if the sesion/
           //events exsist for that session we get actions back
           user1.currentSession = usersession2._id;
-          rulesEngine.getClientActions(user1).then(function(actions){
-            expect(actions.length == 1).toBe(true)
-            //console.log(1)
-            done();
+          user1.save(function(err, user){
+            rulesEngine.getClientActions(user1).then(function(actions){
+              expect(actions.length == 1).toBe(true)
+              //console.log(1)
+              done();
+            });
           });
         });
       });
