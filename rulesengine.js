@@ -1,12 +1,7 @@
 var Q = require('q');
 var mongoose   = require('mongoose');
 
-var Event = require('./models/event');
-var Segment = require('./models/segment');
-var Action = require('./models/action');
-var SessionData = require('./models/sessiondata');
 var SiteUser = require('./models/siteuser');
-var UserSession = require('./models/usersession');
 var Site = require('./models/site');
 var Hopup = require('./models/hopup');
 var ActionSessionData = require('./models/actionsessiondata')
