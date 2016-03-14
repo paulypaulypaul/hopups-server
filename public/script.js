@@ -285,7 +285,8 @@ $( document ).ready(function() {
         userId: 'none',
         siteId: self._siteId,
         dataQ: currentDataQ,
-        queryString: self.getQueryString()
+        queryString: self.getQueryString(),
+        clientVariable: clientVariable
       }
 
       if (sessionData.data){

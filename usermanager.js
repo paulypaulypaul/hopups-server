@@ -78,6 +78,16 @@ usermanager.prototype = {
 
     return deferred.promise;
   },
+  addClientVariableToUserSession: function(user, clientVariable){
+    var deferred = Q.defer();
+
+    user.currentSession.clientVariable = clientVariable;
+    user.currentSession.save(function(err, userSession){
+        deferred.resolve(user);
+    });
+
+    return deferred.promise;
+  },
   addQueryStringToUserSession: function(user, queryString){
     var deferred = Q.defer();
 

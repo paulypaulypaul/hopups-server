@@ -136,6 +136,14 @@ actionsGetter.prototype = {
         }
       }
       return Q(false);
+    },
+    clientvariable: function(segment, user){
+      if (user.currentSession.clientVariable && user.currentSession.clientVariable[segment.key] ){
+        if (user.currentSession.clientVariable[segment.key] == segment.value){
+          return Q(true);
+        }
+      }
+      return Q(false);
     }
   }
 };
