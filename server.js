@@ -4,6 +4,8 @@ var express = require('express');
 var mongoose   = require('mongoose');
 mongoose.connect('mongodb://localhost/hopups');
 
+//mongoose.set('debug', true);
+
 var api = require('./api');
 var widget = require('./widget');
 var admin = require('./admin');

@@ -1,62 +1,10 @@
 var Q = require('q');
-var moment = require('moment')
 
 var User = require('./user');
 var SiteUser = require('./models/siteuser');
 var Site = require('./models/site');
 var UserSession = require('./models/usersession');
-var PhoneNumberAllocation = require('./models/phonenumberallocation');
 
-var schedule = require('node-schedule');
-
-var logger = require('./lib/logger').create("USERMANAGER");
-
-var reapSite = function(site){
-  console.log('site reaping', site._id);
-
-  var phoneNumbers =  [].concat(site.allocatedPhoneNumbers);
-
-  var testPhoneNumber = function(phoneNumber){
-    PhoneNumberAllocation.find({
-        phoneNumber: phoneNumber,
-        archive: false
-    }, function(err, pnas){
-
-      var expiry_time = moment().subtract(1, 'm');
-
-      for(var i = 0; i < pnas.length; i++){
-        var pna = pnas[i];
-        if (pna.lastUpdated > expiry_time.toDate()){
-          //still need the allocation
-        } else {
-
-          pna.archive = true;
-          pna.save();
-
-          var index = site.allocatedPhoneNumbers.indexOf(phoneNumber);
-          if (index > -1){
-            site.allocatedPhoneNumbers.splice(index, 1);
-            site.save();
-          }
-
-        }
-      }
-
-    });
-  }
-
-  for (var i = 0; i < phoneNumbers.length; i++){
-    testPhoneNumber(phoneNumbers[i]);
-  }
-}
-
-schedule.scheduleJob('*/10 * * * * *', function(){
-  Site.find({}, function(err, sites){
-    for (var i = 0; i < sites.length; i++){
-      reapSite(sites[i])
-    }
-  });
-});
 
 var usermanager = function () {
 };
@@ -129,17 +77,6 @@ usermanager.prototype = {
       });
 
     return deferred.promise;
-  },
-  getNextPhoneNumber: function(site){
-    logger.info('getNextPhoneNumber for site', site);
-
-    var phoneNumbers = site.phoneNumbers.split(',');
-    for (var i=0; i < phoneNumbers.length; i++){
-      if (site.allocatedPhoneNumbers.indexOf(phoneNumbers[i]) < 0){
-        return phoneNumbers[i];
-      }
-    }
-    return false;
   },
   addQueryStringToUserSession: function(user, queryString){
     var deferred = Q.defer();

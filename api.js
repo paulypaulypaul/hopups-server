@@ -9,6 +9,9 @@ var userManager = new UserManager();
 var RulesEngine = require('./rulesengine');
 var rulesEngine = new RulesEngine();
 
+var PhoneNumberAllocator = require('./phonenumberallocator');
+var phoneNumberAllocator = new PhoneNumberAllocator();
+
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
   console.log('Time: ', Date.now());
@@ -22,8 +25,11 @@ router.post('/sync', function(req, res) {
   var queryString = req.body.queryString;
 
   userManager.findOrCreateUserById(payloadUserId, siteId).then(function(user){
+
+    //we should only do this one time per session as if they came from facebook but then an internal link removes this query strign
+    //we still want to treat then as form facebook
     userManager.addQueryStringToUserSession(user, queryString).then(function(user){
-      userManager.allocatePhoneNumber(user).then(function(user){
+      phoneNumberAllocator.allocatePhoneNumber(user).then(function(user){
 
         for (var i = 0 ; i < dataQ.length; i++){
           var dataItem = dataQ[i];
