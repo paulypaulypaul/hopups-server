@@ -23,145 +23,121 @@ rulesEngine.prototype = {
     var self = this;
     var deferred = Q.defer();
 
-    this.collectData(user).then(function(rulesEngineData){
+    this.populateUser(user).then(function(user){
+      self.populateSite(user).then(function(site){
+          var actionsGetter = new ActionsGetter(user, site);
+          actionsGetter.getHopupsToPerform().then(function(hopupsToPerform){
+            logger.info('hopups to perform', hopupsToPerform.length);
 
-      var actionsGetter = new ActionsGetter(rulesEngineData);
-      actionsGetter.getHopupsToPerform().then(function(hopups){
-        logger.info('hopups to perform', hopups.length);
+              var actions = []
+              //if multiple actions on the hopup randomly choose which one to send - jus for now.
+              if (hopupsToPerform.length > 0){
+                for (var i = 0; i < hopupsToPerform.length; i++){
+                  if (hopupsToPerform[i].actions.length > 0){
+                    var rand = Math.floor(Math.random() * hopupsToPerform[i].actions.length);
+                    var action = hopupsToPerform[i].actions[rand];
+                    actions.push(action);
 
-        self.updateClientSession(user, hopups, rulesEngineData.currentUserSession).then(function(){
+                    var actionsessiondata = new ActionSessionData({
+                      "datetime"  : new Date(),
 
-          var actions = []
-          //if multiple actions on the hopup randomly choose which one to send
-          if (hopups.length > 0){
-            for (var i = 0; i < hopups.length; i++){
-              if (hopups[i].actions.length > 0){
-                var rand = Math.floor(Math.random() * hopups[i].actions.length);
-                var action = hopups[i].actions[rand];
-                actions.push(action);
+                      "userId"    : user._id,
+                      "sessionId" : user.currentSessionId,
+                      "siteId"    : user.siteId,
+                      "action"    : action._id,
+                      "hopup"     : hopupsToPerform[i]._id
+                    });
 
-                var actionsessiondata = new ActionSessionData({
-                  "datetime"  : new Date(),
+                    actionsessiondata.save(function(err, actionsessiondata) {
+                        if (err) return console.error(err);
 
-                  "userId"    : user._id,
-                  "sessionId" : user.currentSessionId,
-                  "siteId"    : user.siteId,
-                  "action"    : action._id,
-                  "hopup"     : hopups[i]._id
-                });
-
-                actionsessiondata.save(function(err, actionsessiondata) {
-                    if (err) return console.error(err);
-
-                    //yes this will only work for one action - just proving a concept
-                    action.payload.actionsessiondata = actionsessiondata._id;
-                    action.payload.action = actionsessiondata.action;
-                      deferred.resolve(actions);
-                });
-
-//                deferred.resolve(actions);
-
+                        //yes this will only work for one hopup - just proving a concept
+                        action.payload.actionsessiondata = actionsessiondata._id;
+                        action.payload.action = actionsessiondata.action;
+                          deferred.resolve(actions);
+                    });
+                  }
+                }
+              } else {
+                deferred.resolve([]);
               }
-            }
-          } else {
-            deferred.resolve([]);
-          }
 
+            self.updateClientSession(user, hopupsToPerform).then(function(){
+            });
+
+          });
+      });
+    });
+
+    return deferred.promise;
+  },
+  populateUser: function(user){
+    var deferred = Q.defer();
+    SiteUser.aggregate([
+      { $match : { _id : user._id }},
+      { $lookup: {
+          from: 'usersessions',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'usersessions'
+        }
+      },
+      { $lookup: {
+          from: 'sessiondatas',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'sessiondata'
+        }
+      },
+      { $lookup: {
+          from: 'phonenumberallocations',
+          localField: 'currentPhoneNumberAllocation',
+          foreignField: '_id',
+          as: 'currentPhoneNumberAllocation'
+        }
+      }
+    ], function(err, user){
+      //returns 1 item array so use first item
+      SiteUser.populate(user[0], {path:"currentSessionId"}, function(err, user) {
+        deferred.resolve(user);
+      });
+    });
+    return deferred.promise;
+  },
+  populateSite: function(user){
+    var deferred = Q.defer();
+    Site.aggregate([
+      { $match : { _id : user.siteId }},
+      { $lookup: {
+          from: 'hopups',
+          localField: '_id',
+          foreignField: 'siteId',
+          as: 'hopups'
+        }
+      }
+    ], function(err, site){
+
+      Hopup.populate(site[0].hopups, {path:"segments"}, function(err, hopups) {
+        site[0].hopups = hopups;
+
+        Hopup.populate(site[0].hopups, {path:"actions"}, function(err, hopups) {
+          site[0].hopups = hopups;
+          deferred.resolve(site[0]);
         });
-
       });
 
     });
-
     return deferred.promise;
   },
-  collectData: function(user){
-    var deferred = Q.defer();
-    var sessionDataDeferred = Q.defer();
-    var segmentDeferred = Q.defer();
-    var currentUserSessionDeferred = Q.defer();
-    var userSessionDeferred = Q.defer();
-    var actionDeferred = Q.defer();
-    var hopupsDeferred = Q.defer();
-
-    SessionData
-        .find({userId : user._id, siteId : user.siteId, sessionId: user.currentSessionId})
-        .populate('event')
-        .exec(function(err, sessionData){
-            sessionDataDeferred.resolve(sessionData);
-        });
-
-    Segment
-        .find({siteId : user.siteId})
-        .exec(function(err, segments){
-            segmentDeferred.resolve(segments);
-        });
-
-    UserSession
-        .find({user: user._id}, function(err, userSession){
-          var currentUserSession;
-
-          for (var i =0; i < userSession.length; i++){
-            if (userSession[i]._id.equals(user.currentSessionId._id)){
-              currentUserSession = userSession[i];
-            }
-          }
-
-          currentUserSessionDeferred.resolve(currentUserSession);
-          userSessionDeferred.resolve(userSession);
-        });
-
-    Action
-        .find({siteId : user.siteId})
-        .populate('segments')
-        .populate('actionEvents')
-        .exec(function(err, actions){
-            actionDeferred.resolve(actions);
-        });
-
-    Hopup
-        .find({siteId : user.siteId})
-        .populate('segments')
-        .populate('actions')
-        .exec(function(err, hopups){
-            hopupsDeferred.resolve(hopups);
-        });
-
-
-    Q.all([sessionDataDeferred.promise, segmentDeferred.promise, currentUserSessionDeferred.promise, userSessionDeferred.promise, actionDeferred.promise, hopupsDeferred.promise]).then(function(result){
-
-      /*logger.info('collectData', {
-        sessionData: result[0],
-        segments: result[1],
-        currentUserSession: result[2],
-        userSession: result[3],
-        actions: result[4],
-        hopups: result[5],
-        user: user
-      });*/
-
-      deferred.resolve({
-        sessionData: result[0],
-        segments: result[1],
-        currentUserSession: result[2],
-        userSession: result[3],
-        actions: result[4],
-        hopups: result[5],
-        user: user
-      })
-    })
-
-    return deferred.promise;
-  },
-  updateClientSession: function(user, hopups, currentUserSession){
-
+  updateClientSession: function(user, hopups){
     var deferred = Q.defer();
     for (var i = 0; i < hopups.length; i++){
-      currentUserSession.completedHopups.push(hopups[i]._id);
+      user.currentSessionId.completedHopups.push(hopups[i]._id);
     }
-    UserSession.update({_id: user.currentSessionId}, currentUserSession, function(err, userSession){
+    user.currentSessionId.save(function(currentSession){
+      user.currentSessionId = currentSession;
       deferred.resolve();
-    });
+    })
     return deferred.promise;
   }
 };

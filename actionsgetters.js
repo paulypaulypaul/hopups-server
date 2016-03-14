@@ -1,40 +1,34 @@
 var Q = require('q');
 var logger = require('./lib/logger').create("ACTIONS GETTER");
 
-var actionsGetter = function (rulesEngineData) {
-  this.actions = rulesEngineData.actions;
-  this.sessionData = rulesEngineData.sessionData;
-  this.currentUserSession = rulesEngineData.currentUserSession;
-  this.userSession = rulesEngineData.userSession;
-  this.hopups = rulesEngineData.hopups;
-  this.user = rulesEngineData.user;
+var actionsGetter = function (user, site) {
+  this.site = site;
+  this.hopups = site.hopups;
+
+  this.user = user;
 };
 
 actionsGetter.prototype = {
   getHopupsToPerform: function(){
     var self = this;
     var deferred = Q.defer();
-    this.checkHopups().then(function(hopups){
-      self.filterPerformedHopups(hopups).then(function(hopups){
-        deferred.resolve(hopups);
+    this.checkHopups(this.hopups, this.user).then(function(matchingHopups){
+      self.filterPerformedHopups(matchingHopups, self.user).then(function(matchingAndFilteredHopups){
+        deferred.resolve(matchingAndFilteredHopups);
       });
     });
     return deferred.promise;
   },
-  checkHopups: function(){
-    logger.info('checkHopups', this.hopups.length);
+  checkHopups: function(hopups, user){
+    logger.info('checkHopups', hopups.length);
     var deferred = Q.defer();
     var self = this;
 
     var clientActions = [];
     var promises = [];
 
-    //for (var i = 0; i < this.actions.length; i++){
-    //  promises.push(this.checkAction(this.actions[i]))
-    //}
-
-    for (var i = 0; i < this.hopups.length; i++){
-      promises.push(this.checkHopup(this.hopups[i]))
+    for (var i = 0; i < hopups.length; i++){
+      promises.push(this.checkHopup(hopups[i], user))
     }
 
     Q.all(promises).then(function(hopups){
@@ -44,7 +38,7 @@ actionsGetter.prototype = {
 
     return deferred.promise;
   },
-  checkHopup: function(hopup){
+  checkHopup: function(hopup, user){
     logger.info('checkHopup');
 
     var deferred = Q.defer();
@@ -52,7 +46,7 @@ actionsGetter.prototype = {
     var promises = [];
 
     for (var j = 0; j < hopup.segments.length; j++){
-      promises.push(this.checkIfSegmentCriteriaMet(hopup.segments[j], this.user));
+      promises.push(this.checkIfSegmentCriteriaMet(hopup.segments[j], user));
     }
 
     Q.all(promises).then(function(segmentCriteriaMet){
@@ -67,31 +61,40 @@ actionsGetter.prototype = {
     return deferred.promise;
   },
   checkIfSegmentCriteriaMet: function(segment, user){
-    return Q(this.plugins[segment.listen](this.sessionData, segment, user, this.userSession));
+    return Q(this.plugins[segment.listen](segment, user));
   },
-  filterPerformedHopups: function(hopups){
-    logger.info('filterPerformedHopups', hopups.length);
+  filterPerformedHopups: function(matchingHopups, user){
+    logger.info('filterPerformedHopups', matchingHopups.length);
 
     var deferred = Q.defer();
-    var userSession = this.currentUserSession;
-    var clientHopups = [];
+    var matchingAndFilteredHopups = [];
 
-    for (var i = 0; i < hopups.length; i++){
+    for (var i = 0; i < matchingHopups.length; i++){
       //we have to check for undefineds here
-      if (hopups[i] && userSession.completedHopups.indexOf(hopups[i]._id) < 0){
-          clientHopups.push(hopups[i]);
+      if (matchingHopups[i] && user.currentSessionId.completedHopups.indexOf(matchingHopups[i]._id) < 0){
+          matchingAndFilteredHopups.push(matchingHopups[i]);
       }
     }
-    logger.info('filterPerformedHopups returning', clientHopups.length);
-    deferred.resolve(clientHopups);
+
+    logger.info('filterPerformedHopups returning', matchingAndFilteredHopups.length);
+
+    deferred.resolve(matchingAndFilteredHopups);
     return deferred.promise;
   },
+
+
+
+
+
   plugins : {
-    interest: function(sessionData, segment, user){
+    interest: function(segment, user){
       var deferred = Q.defer();
       var tags = {}
 
-      for (var i = 0; i < sessionData.length; i++){
+      //need to add single session support - we calc for all sessions
+      //single sesison would only look at the current session datas.
+
+      for (var i = 0; i < user.sessionData.length; i++){
         //some session data events dont have tags - we need to properly divide thiese up - this for now
         if (sessionData[i].event){
           var tag = sessionData[i].event.tag;
@@ -102,12 +105,10 @@ actionsGetter.prototype = {
         }
       }
 
-      console.log(tags);
-
       deferred.resolve(tags[segment.tag] >= segment.threshold);
       return deferred.promise;
     },
-    inactive: function(sessionData, segment, user){
+    inactive: function(segment, user){
       var now = new Date()
       var lastActiveThreshold = now.setSeconds(now.getSeconds() - segment.threshold);
 
@@ -115,13 +116,13 @@ actionsGetter.prototype = {
 
       return Q(user.lastActive < lastActiveThreshold);
     },
-    visits: function(sessionData, segment, user, userSessions){
-      if (userSessions.length === Number(segment.threshold)){
+    visits: function(segment, user){
+      if (user.usersessions.length === Number(segment.threshold)){
         return Q(true);
       }
       return Q(false);
     },
-    querystring: function(sessionData, segment, user, userSessions){
+    querystring: function(segment, user){
       if (user.currentSessionId.queryString && user.currentSessionId.queryString[segment.key] ){
         if (user.currentSessionId.queryString[segment.key] == segment.value){
           return Q(true);

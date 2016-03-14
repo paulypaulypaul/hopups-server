@@ -9,7 +9,7 @@ var Action = require('./action');
 
 var ActionSchema = new Schema({
         name: String,
-        siteId: String,
+        siteId: { type: Schema.Types.ObjectId, ref: 'Site' },
         type: { type: String, default: 'and'},
         page: String,
         responsetype: String,
