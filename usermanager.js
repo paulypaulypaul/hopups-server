@@ -188,7 +188,9 @@ usermanager.prototype = {
       user.save(function(err, user) {
           if (err) return console.error(err);
 
-          deferred.resolve(user);
+          SiteUser.populate(user, {path:"currentSession"}, function(err, user) {
+            deferred.resolve(user);
+          });
 
       });
 

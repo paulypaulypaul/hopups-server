@@ -83,7 +83,7 @@ rulesEngine.prototype = {
           from: 'usersessions',
           localField: '_id',
           foreignField: 'user',
-          as: 'userSessions'
+          as: 'usersessions'
         }
       },
       { $lookup: {

@@ -276,7 +276,7 @@ $( document ).ready(function() {
         siteId: self._siteId,
         dataQ: currentDataQ,
         queryString: self.getQueryString(),
-        clientVariable: clientVariable
+        clientVariable: clientVariable || {}
       }
 
       if (sessionData.data){
