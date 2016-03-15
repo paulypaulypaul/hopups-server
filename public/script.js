@@ -91,7 +91,7 @@ $( document ).ready(function() {
       //so that when we are attaching events to the new code we have added
       //we know we are in action firing mode!
       this._actionsessiondata = item.payload.actionsessiondata;
-      this._action = item.payload.action;
+      this._action = item;
 
       if (item.responsedatafrom === 'code' || item.responsedatafrom === 'predefined'){
         $('body').append(item.responsedata);
@@ -127,36 +127,26 @@ $( document ).ready(function() {
       var config = this._config;
       var events = config.events;
       var hopups = config.hopups;
-      var actionEvents;
 
       if (this._action){
-
-        //get the events from the corresponding action
-        for (var i = 0; i < hopups.length; i++){
-            for (var j = 0; j < hopups[i].actions.length; j++){
-              if (this._action === hopups[i].actions[j]){
-                actionEvents = hopups[i].events;
-              }
-            }
+        for (var i = 0; i < this._action.events.length; i++){
+          this._action.events[i].parent = this._actionsessiondata;
+          if (this.pageMatch(this._action.events[i])){
+            this.addEvent(this._action.events[i])
+          }
         }
-        console.log(actionEvents);
+      } else {
+        for (var i = 0; i < events.length; i++){
+          if (!this._action){
+            if (this.pageMatch(events[i])){
+                this.addEvent(events[i])
+            }
+          }
+        }
       }
                                                                     //number family by Georgina Harland
                                                                     //7+6=13 13-7=6
                                                                     //6+7=13 13-6=7
-      for (var i = 0; i < events.length; i++){
-        if (!this._action){
-          if (this.pageMatch(events[i])){
-              this.addEvent(events[i])
-          }
-        } else if (this._action && actionEvents.indexOf(events[i]._id) > -1){
-          if (this.pageMatch(events[i])){
-              events[i].parent = this._actionsessiondata;
-              this.addEvent(events[i])
-          }
-        }
-      }
-
     },
     addEvent: function(itemToWire, parent){
       var self = this;

@@ -34,6 +34,11 @@ rulesEngine.prototype = {
                   if (hopupsToPerform[i].actions.length > 0){
                     var rand = Math.floor(Math.random() * hopupsToPerform[i].actions.length);
                     var action = hopupsToPerform[i].actions[rand];
+
+                    //push hopups events to this action
+                    action = action.toObject();
+                    action.events = action.events.concat(hopupsToPerform[i].events)
+
                     actions.push(action);
 
                     var actionsessiondata = new ActionSessionData({
@@ -50,6 +55,7 @@ rulesEngine.prototype = {
                         if (err) return console.error(err);
 
                         //yes this will only work for one hopup - just proving a concept
+                        action.payload = {};
                         action.payload.actionsessiondata = actionsessiondata._id;
                         action.payload.action = actionsessiondata.action;
                           deferred.resolve(actions);
@@ -123,7 +129,12 @@ rulesEngine.prototype = {
 
         Hopup.populate(site[0].hopups, {path:"actions"}, function(err, hopups) {
           site[0].hopups = hopups;
-          deferred.resolve(site[0]);
+
+          Hopup.populate(site[0].hopups, {path:"events"}, function(err, hopups) {
+            site[0].hopups = hopups;
+            deferred.resolve(site[0]);
+          });
+
         });
       });
 

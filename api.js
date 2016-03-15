@@ -12,6 +12,8 @@ var rulesEngine = new RulesEngine();
 var PhoneNumberAllocator = require('./phonenumberallocator');
 var phoneNumberAllocator = new PhoneNumberAllocator();
 
+var logger = require('./lib/logger').create("API");
+
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
   console.log('Time: ', Date.now());
@@ -19,19 +21,25 @@ router.use(function timeLog(req, res, next) {
 });
 
 router.post('/sync', function(req, res) {
+  logger.info('syncing');
   var payloadUserId = req.body.userId || 'none';
   var siteId = req.body.siteId;
   var dataQ = req.body.dataQ;
   var queryString = req.body.queryString;
   var clientVariable = req.body.clientVariable;
 
+  logger.info('findOrCreateUserById');
   userManager.findOrCreateUserById(payloadUserId, siteId).then(function(user){
 
     //we should only do this one time per session as if they came from facebook but then an internal link removes this query strign
     //we still want to treat then as form facebook
+    logger.info('addQueryStringToUserSession');
     userManager.addQueryStringToUserSession(user, queryString).then(function(user){
+      logger.info('addClientVariableToUserSession');
       userManager.addClientVariableToUserSession(user, clientVariable).then(function(user){
+        logger.info('allocatePhoneNumber');
         phoneNumberAllocator.allocatePhoneNumber(user).then(function(user){
+
 
           for (var i = 0 ; i < dataQ.length; i++){
             var dataItem = dataQ[i];
@@ -68,12 +76,15 @@ router.post('/sync', function(req, res) {
           }
 
           if (dataQ.length > 0){
+            logger.info('Have data q to deal with');
             //user has acted to set last action to now
             userManager.resetLastActive(user).then(function(){
               //should we fire any events on the client
               sendResponce(user);
             });
           } else {
+            logger.info('Have NO data q to deal with');
+
             //we still check if we should fire events on the client
             //as some events are not prompted by user actions but, for instance, by lack of user action - inactive action.
             //should we fire without any events from the client

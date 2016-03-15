@@ -91,17 +91,20 @@ usermanager.prototype = {
   addQueryStringToUserSession: function(user, queryString){
     var deferred = Q.defer();
 
-    var obj = {};
-    var qsarray = queryString.split('&');
-    for (var i = 0; i < qsarray.length; i++){
-      var item = qsarray[i].split('=');
-      obj[item[0]] = item[1];
+    if (queryString){
+      var obj = {};
+      var qsarray = queryString.split('&');
+      for (var i = 0; i < qsarray.length; i++){
+        var item = qsarray[i].split('=');
+        obj[item[0]] = item[1];
+      }
+      user.currentSession.queryString = obj;
+      user.currentSession.save(function(err, userSession){
+          deferred.resolve(user);
+      });
+    } else {
+      deferred.resolve(user);
     }
-    user.currentSession.queryString = obj;
-    user.currentSession.save(function(err, userSession){
-        deferred.resolve(user);
-    });
-
     return deferred.promise;
   },
   findOrCreateUserById: function(id, siteId){
