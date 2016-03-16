@@ -4,7 +4,7 @@ var logger = require('./lib/logger').create("ACTIONS GETTER");
 var actionsGetter = function (user, site) {
   this.site = site;
   this.hopups = site.hopups;
-
+console.log(site.hopups)
   this.user = user;
 };
 
@@ -46,7 +46,6 @@ actionsGetter.prototype = {
     var promises = [];
 
     for (var j = 0; j < hopup.segments.length; j++){
-      console.log('pooooooo')
       promises.push(this.checkIfSegmentCriteriaMet(hopup.segments[j], user));
     }
 
@@ -65,6 +64,7 @@ actionsGetter.prototype = {
     logger.info('check if segment criteria met', segment.listen);
     return Q(this.plugins[segment.listen](segment, user));
   },
+
   filterPerformedHopups: function(matchingHopups, user){
     logger.info('filterPerformedHopups', matchingHopups.length);
 
@@ -101,8 +101,9 @@ actionsGetter.prototype = {
       for (var i = 0; i < user.sessionData.length; i++){
         //some session data events dont have tags - we need to properly divide thiese up - this for now
         if (user.sessionData[i].event){
+          logger.info('tag', user.sessionData[i].event.tag);
+
           var tag = user.sessionData[i].event.tag;
-          logger.info('tag', user.sessionData[i]);
           if (!tags[tag]){
             tags[tag] = 0;
           }
@@ -119,7 +120,7 @@ actionsGetter.prototype = {
       var now = new Date()
       var lastActiveThreshold = now.setSeconds(now.getSeconds() - segment.threshold);
 
-      console.log('user.lastActive < lastActiveThreshold', user.lastActive < lastActiveThreshold);
+      logger.info('user.lastActive < lastActiveThreshold', user.lastActive < lastActiveThreshold);
 
       return Q(user.lastActive < lastActiveThreshold);
     },
