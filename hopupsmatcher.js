@@ -1,5 +1,5 @@
 var Q = require('q');
-var logger = require('./lib/logger').create("ACTIONS GETTER");
+var logger = require('./lib/logger').create("HOPUPS MATCHER");
 
 var hopupsMatcher = function (user, site) {
   this.site = site;
@@ -13,6 +13,7 @@ hopupsMatcher.prototype = {
     var deferred = Q.defer();
     this.checkHopups(this.hopups, this.user).then(function(matchingHopups){
       self.filterPerformedHopups(matchingHopups, self.user).then(function(matchingAndFilteredHopups){
+         logger.info('wtf', matchingAndFilteredHopups);
         deferred.resolve(matchingAndFilteredHopups);
       });
     });
@@ -116,10 +117,10 @@ hopupsMatcher.prototype = {
       return deferred.promise;
     },
     inactive: function(segment, user){
-      var now = new Date()
+      var now = new Date();
       var lastActiveThreshold = now.setSeconds(now.getSeconds() - segment.threshold);
 
-      logger.info('user.lastActive < lastActiveThreshold', user.lastActive < lastActiveThreshold);
+      logger.info('user.lastActive < lastActiveThreshold', user.lastActive < lastActiveThreshold, user.lastActive, lastActiveThreshold);
 
       return Q(user.lastActive < lastActiveThreshold);
     },
