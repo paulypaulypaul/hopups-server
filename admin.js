@@ -15,7 +15,7 @@ var UserSession = require('./models/usersession');
 var SiteUser = require('./models/siteuser');
 
 
-var verifyFacebookUserAccessToken = require('./verifyFacebookUserAccessToken');
+var verifyFacebookUserAccessToken = require('./verifyfacebookuseraccesstokens');
 var SiteInitialiser = require('./siteInitialiser');
 var siteInitialiser = new SiteInitialiser();
 
