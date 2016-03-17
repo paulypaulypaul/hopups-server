@@ -7,7 +7,7 @@ var Hopup = require('./models/hopup');
 var ActionSessionData = require('./models/actionsessiondata')
 var SessionData = require('./models/sessiondata');
 
-var ActionsGetter = require('./actionsgetters')
+var HopupsMatcher = require('./hopupsmatcher')
 
 var logger = require('./lib/logger').create("RULES ENGINE");
 
@@ -23,8 +23,8 @@ rulesEngine.prototype = {
       self.populateSite(user).then(function(site){
         logger.info('£££££££££££££££££££££££££', user, site);
 
-          var actionsGetter = new ActionsGetter(user, site);
-          actionsGetter.getHopupsToPerform().then(function(hopupsToPerform){
+          var hopupsMatcher = new HopupsMatcher(user, site);
+          hopupsMatcher.getHopupsToPerform().then(function(hopupsToPerform){
             logger.info('hopups to perform', hopupsToPerform.length);
 
               var actions = []

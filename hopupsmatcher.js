@@ -1,14 +1,13 @@
 var Q = require('q');
 var logger = require('./lib/logger').create("ACTIONS GETTER");
 
-var actionsGetter = function (user, site) {
+var hopupsMatcher = function (user, site) {
   this.site = site;
   this.hopups = site.hopups;
-console.log(site.hopups)
   this.user = user;
 };
 
-actionsGetter.prototype = {
+hopupsMatcher.prototype = {
   getHopupsToPerform: function(){
     var self = this;
     var deferred = Q.defer();
@@ -149,4 +148,4 @@ actionsGetter.prototype = {
   }
 };
 
-module.exports = actionsGetter;
+module.exports = hopupsMatcher;

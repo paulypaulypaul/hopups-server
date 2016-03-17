@@ -1,4 +1,4 @@
-var ActionsGetter = require('../actionsgetters');
+var HopupsMatcher = require('../hopupsmatcher');
 
 describe("Actions getter tests", function() {
 
@@ -26,17 +26,23 @@ describe("Actions getter tests", function() {
     }
     var site = {
       hopups: [{
+        name: 'donkeyhopup',
         segments:[{
           listen: 'interest',
           tag: 'test',
           threshold: 1
         }],
-        actions: []
+        actions: [{
+          name: 'donkeyaction'
+        }]
       }]
     }
-    var actionsGetter = new ActionsGetter(user, site);
+    var hopupsMatcher = new HopupsMatcher(user, site);
 
-    actionsGetter.getHopupsToPerform().then(function(actions){
+    hopupsMatcher.getHopupsToPerform().then(function(actions){
+
+      expect(actions.length).toEqual(1)
+      expect(actions[0].name).toEqual('donkeyhopup')
 
       console.log('returned actions' , actions);
       done();
