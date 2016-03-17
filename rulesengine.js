@@ -21,7 +21,7 @@ rulesEngine.prototype = {
 
     this.populateUser(user).then(function(user){
       self.populateSite(user).then(function(site){
-        logger.info('£££££££££££££££££££££££££', user, site);
+        logger.info('Populate site for', user, site);
 
           var hopupsMatcher = new HopupsMatcher(user, site);
           hopupsMatcher.getHopupsToPerform().then(function(hopupsToPerform){
