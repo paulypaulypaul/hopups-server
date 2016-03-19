@@ -28,7 +28,9 @@ hopupsMatcher.prototype = {
     var promises = [];
 
     for (var i = 0; i < hopups.length; i++){
-      promises.push(this.checkHopup(hopups[i], user))
+      if (hopups[i].active){
+        promises.push(this.checkHopup(hopups[i], user))
+      }
     }
 
     Q.all(promises).then(function(hopups){
