@@ -64,6 +64,10 @@ hopupsMatcher.prototype = {
   },
   checkIfSegmentCriteriaMet: function(segment, user){
     logger.info('check if segment criteria met', segment.listen);
+
+    //this only checks the segment typeof
+    //we need to also chack the page specified in the segment!!!!!!!!!!!!!
+
     return Q(this.plugins[segment.listen](segment, user));
   },
 
