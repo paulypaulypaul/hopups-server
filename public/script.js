@@ -222,6 +222,10 @@ $( document ).ready(function() {
         if (page == pathname || page == '*' ){
             return true
         }
+        var re = new RegExp(page)
+        if (pathname.match(re)){
+          return true;
+        }
         return false;
     },
     startSync : function(){
