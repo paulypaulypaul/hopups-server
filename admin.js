@@ -110,8 +110,8 @@ router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, 
             } else if (type === 'siteuser'){
               SiteUser.aggregate([
                 { $match : { siteId : mongoose.Types.ObjectId(req.params.siteId) }},
-                { $limit : 5 },
                 { $sort : { lastActive : -1 } },
+                { $limit : 5 },
                 { $lookup: {
                     from: 'usersessions',
                     localField: '_id',
