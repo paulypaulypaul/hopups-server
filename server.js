@@ -1,5 +1,6 @@
 var http = require('http');
 var express = require('express');
+var compression = require('compression')
 
 var mongoose   = require('mongoose');
 mongoose.connect('mongodb://localhost/hopups');
@@ -24,11 +25,22 @@ var app = express();
 // all environments
 app.set('port', process.env.PORT || 3000);
 
+function shouldCompress(req, res) {
+  if (req.headers['x-no-compression']) {
+    // don't compress responses with this request header
+    return false
+  }
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!COMPRESSION');
+  // fallback to standard filter function
+  return compression.filter(req, res)
+}
+
 app.use(logger('dev'));
 app.use(methodOverride());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer());
+app.use(compression({filter: shouldCompress}));
 
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');    // Website you wish to allow to connect
