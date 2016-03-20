@@ -91,7 +91,9 @@ usermanager.prototype = {
   addQueryStringToUserSession: function(user, queryString){
     var deferred = Q.defer();
 
-    if (queryString){
+    //only set the query string if its not been set - that way we preserve the session entry query string
+    //even after navigating to pages without a query string
+    if (queryString && !user.currentSession.queryString){
       var obj = {};
       var qsarray = queryString.split('&');
       for (var i = 0; i < qsarray.length; i++){
