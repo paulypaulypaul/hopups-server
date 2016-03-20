@@ -65,12 +65,48 @@ hopupsMatcher.prototype = {
   checkIfSegmentCriteriaMet: function(segment, user){
     logger.info('check if segment criteria met', segment.listen);
 
+    var self = this;
+
     //this only checks the segment typeof
     //we need to also chack the page specified in the segment!!!!!!!!!!!!!
+    var currentPath = user.currentSession.location;
 
-    return Q(this.plugins[segment.listen](segment, user));
+    return this.pageMatch(currentPath, segment.page).then(function(matched){
+      if (matched){
+        logger.info('segment matched current path');
+        return Q(self.plugins[segment.listen](segment, user));
+      } else {
+        logger.info('segment did not match current path');
+        return Q(false);
+      }
+    });
   },
+  pageMatch: function(pathname, page){
+    var deferred = Q.defer();
+    var matched = false;
 
+    if (page){
+
+      if (page.charAt(0) == "/"){
+        page = page.substr(1);
+      }
+
+      if (page == pathname || page == '*' ){
+        matched = true;
+      } else {
+        var re = new RegExp(page)
+        if (pathname.match(re)){
+          matched = true;
+        }
+      }
+
+    } else {
+      matched = true;
+    }
+
+    deferred.resolve(matched);
+    return deferred.promise;
+  },
   filterPerformedHopups: function(matchingHopups, user){
     logger.info('filterPerformedHopups', matchingHopups.length);
 

@@ -109,6 +109,21 @@ usermanager.prototype = {
     }
     return deferred.promise;
   },
+  addLocationUserSession: function(user, location){
+    var deferred = Q.defer();
+
+    //only set the query string if its not been set - that way we preserve the session entry query string
+    //even after navigating to pages without a query string
+    if (location){
+      user.currentSession.location = location;
+      user.currentSession.save(function(err, userSession){
+          deferred.resolve(user);
+      });
+    } else {
+      deferred.resolve(user);
+    }
+    return deferred.promise;
+  },
   findOrCreateUserById: function(id, siteId){
     var self = this;
     var deferred = Q.defer();

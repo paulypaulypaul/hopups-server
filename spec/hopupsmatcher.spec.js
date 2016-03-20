@@ -1,6 +1,6 @@
 var HopupsMatcher = require('../hopupsmatcher');
 
-describe("Actions getter tests", function() {
+describe("Hopups matcher tests", function() {
 
   beforeEach(function(done) {
     done();
@@ -22,12 +22,14 @@ describe("Actions getter tests", function() {
         }
       ],
       currentSession: {
-        completedHopups : []
+        completedHopups : [],
+        page: '*'
       }
     };
 
     var site = {
       hopups: [{
+        active: true,
         name: 'donkeyhopup',
         segments:[{
           listen: 'interest',
@@ -39,6 +41,7 @@ describe("Actions getter tests", function() {
         }]
       },
       {
+        active: true,
         name: 'donkeyhopup',
         segments:[{
           listen: 'interest',
@@ -80,7 +83,8 @@ describe("Actions getter tests", function() {
         }
       ],
       currentSession: {
-        completedHopups : []
+        completedHopups : [],
+        page: '*'
       },
       lastActive : lastActive
     };
@@ -89,6 +93,7 @@ describe("Actions getter tests", function() {
       hopups: [
         // this hopup will match as only one segment that matches
         {
+          active: true,
           name: 'donkeyhopup',
           segments:[{
             listen: 'inactive',
@@ -100,6 +105,7 @@ describe("Actions getter tests", function() {
         },
         // this hopup will not match as only one segment that does not match
         {
+          active: true,
           name: 'donkeyhopup2',
           segments:[{
             listen: 'inactive',
@@ -111,6 +117,7 @@ describe("Actions getter tests", function() {
         },
         // this hopup will match as 2 segments with 2 matches
         {
+          active: true,
           name: 'donkeyhopup3',
           segments:[{
             listen: 'interest',
@@ -127,6 +134,7 @@ describe("Actions getter tests", function() {
         },
         // this hopup will not match as 2 segments only one matches
         {
+          active: true,
           name: 'donkeyhopup3',
           segments:[{
             listen: 'interest',
@@ -168,7 +176,8 @@ describe("Actions getter tests", function() {
         }
       ],
       currentSession: {
-        completedHopups : []
+        completedHopups : [],
+        page: '*'
       },
       usersessions: [
         {}
@@ -177,6 +186,7 @@ describe("Actions getter tests", function() {
 
     var site = {
       hopups: [{
+        active: true,
         name: 'donkeyhopup',
         segments:[{
           listen: 'visits',
@@ -187,6 +197,7 @@ describe("Actions getter tests", function() {
         }]
       },
       {
+        active: true,
         name: 'donkeyhopup',
         segments:[{
           listen: 'interest',
@@ -232,6 +243,7 @@ describe("Actions getter tests", function() {
 
     var site = {
       hopups: [{
+        active: true,
         name: 'donkeyhopup2',
         segments:[{
           listen: 'visits',
@@ -242,6 +254,7 @@ describe("Actions getter tests", function() {
         }]
       },
       {
+        active: true,
         name: 'donkeyhopup',
         segments:[{
           listen: 'visits',

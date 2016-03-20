@@ -3,6 +3,10 @@ var nanoModal;!function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="func
 });
 
 
+if (typeof  clientVariable === "undefined"){
+  clientVariable = {};
+}
+
 var SessionData = function() {
   this.name = 'numero_user';
   this.data;
@@ -83,6 +87,9 @@ $( document ).ready(function() {
     },
     getQueryString: function(){
       return window.location.href.split('?')[1];
+    },
+    getLocation: function(){
+      return window.location.pathname;
     },
     attachHTML: function(item){
       var self = this;
@@ -280,6 +287,7 @@ $( document ).ready(function() {
         siteId: self._siteId,
         dataQ: currentDataQ,
         queryString: self.getQueryString(),
+        location: self.getLocation(),
         clientVariable: clientVariable || {}
       }
 
