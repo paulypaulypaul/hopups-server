@@ -137,9 +137,11 @@ usermanager.prototype = {
         //we have a user
         //now we check if the session is 'old' and create a new one if needed
         UserSession.findOne({_id: user.currentSession}, function(err, userSession){
-          //hard coded hour session - obs parametise
+
+
+          //hard coded 10 min sessions - obs parametise
           var nowMinusHour = new Date();
-          nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 1);
+          nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 10);
 
           if (!userSession || !userSession.date || userSession.date < nowMinusHour) {
             var userSession = new UserSession();
