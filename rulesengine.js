@@ -5,11 +5,14 @@ var SiteUser = require('./models/siteuser');
 var Site = require('./models/site');
 var Hopup = require('./models/hopup');
 var ActionSessionData = require('./models/actionsessiondata')
+var ActionSessionDataTimeSeries = require('./models/actionsessiondatatimeseries');
 var SessionData = require('./models/sessiondata');
 
 var HopupsMatcher = require('./hopupsmatcher')
 
 var logger = require('./lib/logger').create("RULES ENGINE");
+
+var moment = require('moment');
 
 var rulesEngine = function () {
 };
@@ -41,7 +44,7 @@ rulesEngine.prototype = {
 
                     actions.push(action);
 
-                    var actionsessiondata = new ActionSessionData({
+                    var objToSave = {
                       "datetime"  : new Date(),
 
                       "userId"    : user._id,
@@ -49,8 +52,9 @@ rulesEngine.prototype = {
                       "siteId"    : user.siteId,
                       "action"    : action._id,
                       "hopup"     : hopupsToPerform[i]._id
-                    });
+                    }
 
+                    var actionsessiondata = new ActionSessionData(objToSave);
                     actionsessiondata.save(function(err, actionsessiondata) {
                         if (err) return console.error(err);
 
@@ -60,6 +64,35 @@ rulesEngine.prototype = {
                         action.payload.action = actionsessiondata.action;
                           deferred.resolve(actions);
                     });
+
+
+                    //look for item that starts at the start of this min
+                    //if we find add record to it
+                    //else create a new one and add to it
+                    var timeSeriesStartMinute = moment().startOf('minute');
+                    var timeSeriesEndMinute = timeSeriesStartMinute.clone().add(1, 'm');
+
+                    ActionSessionDataTimeSeries.findOne({dateTime : {$gte: timeSeriesStartMinute.toDate(), $lt: timeSeriesEndMinute.toDate() }, siteId : mongoose.Types.ObjectId(user.siteId)} , function(err, actionSessionDataSchemaTimeSeries){
+                      if (actionSessionDataSchemaTimeSeries){
+                        actionSessionDataSchemaTimeSeries.data.push(objToSave);
+                      } else {
+                        actionSessionDataSchemaTimeSeries = new ActionSessionDataTimeSeries({
+                          siteId : user.siteId,
+                          dateTime: timeSeriesStartMinute,
+                          data: [objToSave]
+                        });
+                      }
+
+                      actionSessionDataSchemaTimeSeries.save(function(err, actionsessiondata) {
+                            if (err) return console.error(err);
+
+                            //yes we just do nothing at the moment -
+                            // will soon swapp this method with the one above and return the deferred when its deon
+                      });
+                      
+                    });
+
+
                   }
                 }
               } else {
