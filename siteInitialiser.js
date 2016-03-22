@@ -64,6 +64,7 @@ siteInitialiser.prototype = {
     name : "First Visit",
     listen : "visits",
     threshold : "1",
+    operator : "eq",
     page : "*",
     system : "true"
   }],
