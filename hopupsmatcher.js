@@ -1,11 +1,39 @@
 var Q = require('q');
 var logger = require('./lib/logger').create("HOPUPS MATCHER");
 
+var comparisonOperators= {
+  "gt": function(a,value) {
+    return a > value;
+  },
+  "gte": function(a,value) {
+    return a >= value;
+  },
+  "eq": function(a,value) {
+    return a === value;
+  },
+  "in": function(a,value) {
+    return value.indexOf(a) != -1;
+  },
+  "lt": function(a,value) {
+    return a < value;
+  },
+  "lte": function(a,value) {
+    return a <= value;
+  },
+  "matches": function(a,value) {
+    return (""+a).match(value) != null;
+  },
+  "neq": function(a,value) {
+    return !comparisonOperators.eq(a,value);
+  }
+};
+
 var hopupsMatcher = function (user, site) {
   this.site = site;
   this.hopups = site.hopups;
   this.user = user;
 };
+
 
 hopupsMatcher.prototype = {
   getHopupsToPerform: function(){
@@ -159,6 +187,7 @@ hopupsMatcher.prototype = {
       return deferred.promise;
     },
     inactive: function(segment, user){
+
       var now = new Date();
       var lastActiveThreshold = now.setSeconds(now.getSeconds() - segment.threshold);
 
@@ -167,24 +196,21 @@ hopupsMatcher.prototype = {
       return Q(user.lastActive < lastActiveThreshold);
     },
     visits: function(segment, user){
-      if (user.usersessions.length === Number(segment.threshold)){
-        return Q(true);
-      }
-      return Q(false);
+        var op = comparisonOperators[segment.operator];
+        return Q(op(user.usersessions.length, segment.threshold));
     },
     querystring: function(segment, user){
-      if (user.currentSession.queryString && user.currentSession.queryString[segment.key] ){
-        if (user.currentSession.queryString[segment.key] == segment.value){
-          return Q(true);
-        }
+      if (user.currentSession.queryString && user.currentSession.queryString[segment.key]){
+        var op = comparisonOperators[segment.operator];
+        return Q(op(user.currentSession.queryString[segment.key], segment.value));
       }
+
       return Q(false);
     },
     clientvariable: function(segment, user){
-      if (user.currentSession.clientVariable && user.currentSession.clientVariable[segment.key] ){
-        if (user.currentSession.clientVariable[segment.key] == segment.value){
-          return Q(true);
-        }
+      if (user.currentSession.clientVariable && user.currentSession.clientVariable[segment.key]){
+        var op = comparisonOperators[segment.operator];
+        return Q(op(user.currentSession.clientVariable[segment.key], segment.value));
       }
       return Q(false);
     }

@@ -10,6 +10,7 @@ var SegmentSchema = new Schema({
         page: String,
         listen: String,
         tag: String,
+        operator: String,
         threshold: String,
         key: String,
         value: String,
