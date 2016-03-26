@@ -10,7 +10,7 @@ var Action = require('./models/action');
 var Hopup = require('./models/hopup');
 var SessionData = require('./models/sessiondata');
 var ActionSessionData = require('./models/actionsessiondata');
-
+var ActionSessionDataTimeSeries = require('./models/actionsessiondatatimeseries');
 var UserSession = require('./models/usersession');
 var SiteUser = require('./models/siteuser');
 
@@ -104,8 +104,14 @@ router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, 
             } else if (type === 'actionsessiondata'){
               ActionSessionData.find({ siteId : req.params.siteId })
               //.populate('segments')
-              .exec(function(err, sessiondata){
-                res.send(sessiondata);
+              .exec(function(err, actionsessiondata){
+                res.send(actionsessiondata);
+              });
+            } else if (type === 'actionsessiondatatimseries'){
+              ActionSessionDataTimeSeries.find({ siteId : req.params.siteId })
+              //.populate('segments')
+              .exec(function(err, actionsessiondatatimseries){
+                res.send(actionsessiondatatimseries);
               });
             } else if (type === 'siteuser'){
               SiteUser.aggregate([
