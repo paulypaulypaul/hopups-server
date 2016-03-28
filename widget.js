@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var fs = require('fs');
+var UglifyJS = require("uglify-js");
 
 var Site = require('./models/site');
 var Event = require('./models/event');
@@ -19,39 +20,52 @@ router.get('/:id', function(req, res) {
         res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.header('Expires', '-1');
         res.header('Pragma', 'no-cache');
-        
+
+        if (!site){
+          res.send('{}');
+        } else {
+
+          fs.readFile('./public/script.js', 'utf8', function (err, data) {
+            if (err) {
+              return console.log(err);
+            }
+
+            data = data.replace(/\[%CONFIG%\]/gi,
+              JSON.stringify({
+                siteId: site._id,
+                domain: req.get('host')  // this makes it easy to use on test and production serve - might not be goo idea - not sure why
+              }
+            ));
+
+            var result = UglifyJS.minify(data, {
+              fromString: true
+            });
+
+            res.send(result.code);
+          });
+        }
+      });
+});
+
+router.get('/:id/config', function(req, res) {
+
+      Site.findOne({_id : req.params.id}, function(err, site){
+        res.setHeader('Content-Type', 'application/json');
+        res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        res.header('Expires', '-1');
+        res.header('Pragma', 'no-cache');
+
         if (!site){
           res.write('{}');
           res.end();
         } else {
-
-          var config = {};
           fs.readFile('./public/script.js', 'utf8', function (err, data) {
             if (err) {
               return console.log(err);
             }
 
             Event.find({siteId : site._id, active: true}, function(err, events){
-
-              config.events = events;
-
-              /*Hopup
-              .find({siteId : site._id}, { actions: 1, events: 1})
-              .exec(function(err, hopups){
-                  config.hopups = hopups;*/
-
-                  data = data.replace(/\[%CONFIG%\]/gi,
-                    JSON.stringify({
-                      config: config,
-                      siteId: site._id,
-                      domain: req.get('host')  // this makes it easy to use on test and production serve - might not be goo idea - not sure why
-                    }
-                  ));
-
-                  res.write(data)
-                  res.end();
-
-            /*  });*/
+              res.send(events);
             });
           });
         }
