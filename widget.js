@@ -16,7 +16,10 @@ router.get('/:id', function(req, res) {
 
       Site.findOne({_id : req.params.id}, function(err, site){
         res.setHeader('Content-Type', 'application/json');
-
+        res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        res.header('Expires', '-1');
+        res.header('Pragma', 'no-cache');
+        
         if (!site){
           res.write('{}');
           res.end();
