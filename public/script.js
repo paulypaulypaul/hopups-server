@@ -184,6 +184,7 @@ $( document ).ready(function() {
                 parent: item.parent,
                 dataFrom : dataFrom,
                 location: location.pathname,
+                userAgent: navigator.userAgent
               }
             };
 
