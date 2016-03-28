@@ -164,7 +164,14 @@ rulesEngine.prototype = {
   },
   populateAction: function(actionId){
     var deferred = Q.defer();
-    Action.aggregate([
+    Action.findOne({_id: actionId})
+    .populate('events')
+    .exec(function(err, action){
+      deferred.resolve(action);
+    });
+
+    //commented out as the group part returns ana rray of arrays - cant find a way not to
+    /*Action.aggregate([
       { $match : { _id : actionId }},
       { "$unwind": "$events" },
       { $lookup: {
@@ -180,11 +187,12 @@ rulesEngine.prototype = {
         "responsedata": { "$first": "$responsedata" },
         "responsedatafrom": { "$first": "$responsedatafrom" },
         "responsedatalocation": { "$first": "$responsedatalocation" },
-        "events": { "$push": "$events" },
+        "events": { "$addToSet": "$events" },
     }}
     ], function(err, action){
         deferred.resolve(action[0]);
-    });
+    });*/
+
     return deferred.promise;
   },
   populateSite: function(user){
