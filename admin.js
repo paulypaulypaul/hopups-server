@@ -66,13 +66,12 @@ router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, 
       //check this user id can access the
 
       Site.find({user: requestUserId}, '_id', function(err, sites){
-        isRequestedSiteSuthorised = _.some( sites, function( el ) {
-            console.log(el._id, siteId)
+
+        var isRequestedSitesAuthorised = _.some(sites, function( el ) {
             return el._id + '' === siteId;
         });
 
-        if (isRequestedSiteSuthorised){
-
+        if (isRequestedSitesAuthorised){
 
             if (type === 'events'){
               Event.find({ siteId : siteId }, function(err, events){

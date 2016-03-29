@@ -84,7 +84,7 @@ phonenumberallocator.prototype = {
     return deferred.promise;
   },
   getNextPhoneNumber: function(site){
-    logger.info('getNextPhoneNumber for site', site);
+    logger.info('getNextPhoneNumber for site', site._id);
 
     var phoneNumbers = site.phoneNumbers.split(',');
     for (var i=0; i < phoneNumbers.length; i++){
@@ -106,7 +106,7 @@ phonenumberallocator.prototype = {
     });
   },
   reapSite: function(site){
-    console.log('site reaping', site._id);
+    logger.info('site reaping', site._id);
 
     var phoneNumbers =  [].concat(site.allocatedPhoneNumbers);
 

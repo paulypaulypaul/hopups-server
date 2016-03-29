@@ -3,15 +3,11 @@ var router = express.Router();
 var fs = require('fs');
 var UglifyJS = require("uglify-js");
 
+var logger = require('./lib/logger').create("WIDGET");
+
 var Site = require('./models/site');
 var Event = require('./models/event');
 var Hopup = require('./models/hopup');
-
-// middleware that is specific to this router
-router.use(function timeLog(req, res, next) {
-  console.log('widget Time: ', Date.now());
-  next();
-});
 
 router.get('/:id', function(req, res) {
 
@@ -27,7 +23,7 @@ router.get('/:id', function(req, res) {
 
           fs.readFile('./public/script.js', 'utf8', function (err, data) {
             if (err) {
-              return console.log(err);
+              return logger.error(err);
             }
 
             data = data.replace(/\[%CONFIG%\]/gi,

@@ -14,13 +14,10 @@ var phoneNumberAllocator = new PhoneNumberAllocator();
 
 var logger = require('./lib/logger').create("API");
 
-// middleware that is specific to this router
-router.use(function timeLog(req, res, next) {
-  console.log('Time: ', Date.now());
-  next();
-});
-
 router.post('/sync', function(req, res) {
+
+  //IF GOOGLE BOT OR OTHERS DO NOTHING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   logger.info('syncing');
   var payloadUserId = req.body.userId || 'none';
   var siteId = req.body.siteId;
@@ -31,19 +28,14 @@ router.post('/sync', function(req, res) {
 
   logger.info('findOrCreateUserById');
   userManager.findOrCreateUserById(payloadUserId, siteId).then(function(user){
-
-    //we should only do this one time per session as if they came from facebook but then an internal link removes this query strign
-    //we still want to treat then as form facebook
     logger.info('addQueryStringToUserSession');
     userManager.addQueryStringToUserSession(user, queryString).then(function(user){
       logger.info('addClientVariableToUserSession');
       userManager.addClientVariableToUserSession(user, clientVariable).then(function(user){
-        logger.info('allocatePhoneNumber');
-        userManager.addLocationUserSession(user, location).then(function(user){
+        logger.info('addLocationToUserSession');
+        userManager.addLocationToUserSession(user, location).then(function(user){
           logger.info('allocatePhoneNumber');
-
           phoneNumberAllocator.allocatePhoneNumber(user).then(function(user){
-
 
             for (var i = 0 ; i < dataQ.length; i++){
               var dataItem = dataQ[i];

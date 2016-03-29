@@ -2,10 +2,15 @@ var http = require('http');
 var express = require('express');
 var compression = require('compression')
 
+var logger = require('./lib/logger').create("SERVER");
+
 var mongoose   = require('mongoose');
 mongoose.connect('mongodb://localhost/hopups');
 
-//mongoose.set('debug', true);
+mongoose.set('debug', true);
+mongoose.set('debug', function (coll, method, query, doc) {
+  logger.info('query', query);
+});
 
 var api = require('./api');
 var widget = require('./widget');
@@ -14,7 +19,6 @@ var admin = require('./admin');
 var path = require('path');
 
 var favicon = require('serve-favicon');
-var logger = require('morgan');
 var methodOverride = require('method-override');
 var bodyParser = require('body-parser');
 var multer = require('multer');
@@ -30,12 +34,10 @@ function shouldCompress(req, res) {
     // don't compress responses with this request header
     return false
   }
-  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!COMPRESSION');
   // fallback to standard filter function
   return compression.filter(req, res)
 }
 
-app.use(logger('dev'));
 app.use(methodOverride());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -63,5 +65,5 @@ if ('development' == app.get('env')) {
 
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+  logger.info('Express server listening on port ' + app.get('port'));
 });

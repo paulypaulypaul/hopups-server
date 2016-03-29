@@ -5,6 +5,7 @@ var SiteUser = require('./models/siteuser');
 var Site = require('./models/site');
 var UserSession = require('./models/usersession');
 
+var logger = require('./lib/logger').create("USER MANAGER");
 
 var usermanager = function () {
 };
@@ -91,8 +92,8 @@ usermanager.prototype = {
   addQueryStringToUserSession: function(user, queryString){
     var deferred = Q.defer();
 
-    //only set the query string if its not been set - that way we preserve the session entry query string
-    //even after navigating to pages without a query string
+    //we should only do this one time per session as if they came from facebook but then an internal link removes this query string
+    //we still want to treat then as form facebook
     if (queryString && !user.currentSession.queryString){
       var obj = {};
       var qsarray = queryString.split('&');
@@ -109,11 +110,9 @@ usermanager.prototype = {
     }
     return deferred.promise;
   },
-  addLocationUserSession: function(user, location){
+  addLocationToUserSession: function(user, location){
     var deferred = Q.defer();
 
-    //only set the query string if its not been set - that way we preserve the session entry query string
-    //even after navigating to pages without a query string
     if (location){
       user.currentSession.location = location;
       user.currentSession.save(function(err, userSession){
@@ -141,9 +140,12 @@ usermanager.prototype = {
 
           //hard coded 10 min sessions - obs parametise
           var nowMinusHour = new Date();
-          nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 10);
+          nowMinusHour.setSeconds(nowMinusHour.getSeconds() - 1);
 
           if (!userSession || !userSession.date || userSession.date < nowMinusHour) {
+
+            logger.info('new user session for', userSession.user );
+
             var userSession = new UserSession();
             userSession.user = user._id;
             userSession.save(function(err, userSession) {

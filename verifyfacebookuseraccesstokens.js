@@ -3,6 +3,7 @@ var moment = require('moment')
 var request = require('request');
 var Q = require('q');
 
+var logger = require('./lib/logger').create("VERIFY TOKEN");
 
 var findUserByAccessToken = function(token){
   var deferred = Q.defer();
@@ -22,13 +23,13 @@ var validateFacebookToken = function(token){
   var deferred = Q.defer();
 
   var path = 'https://graph.facebook.com/me?access_token=' + token;
-console.log('path', path)
+  logger.info('path', path);
   request(path, function (error, response, body) {
 
     var data = JSON.parse(body);
-  console.log('facebook responce', data)
+    logger.info('facebook responce', data)
     if (!error && response && response.statusCode && response.statusCode == 200) {
-      console.log('facebook responce', data)
+      logger.info('facebook responce', data)
       deferred.resolve(data);
     }
     else {
@@ -59,7 +60,7 @@ var findOrCreateUserByFacebookData = function(data, token){
   User.findOne({ 'facebook.id' :  facebook_user.id }, function(err, user) {
 
       if (user) {
-        console.log('found user')
+          logger.info('found user');
 
           user.facebook.token.access_token = token;
           user.facebook.token.stored_time = Date.now();
@@ -72,7 +73,7 @@ var findOrCreateUserByFacebookData = function(data, token){
           });
 
       } else {
-          console.log('creating user')
+          logger.info('creating user');
           var newUser            = new User();
           newUser.facebook = facebook_user;
 
@@ -94,7 +95,7 @@ module.exports = function(req, res, next) {
   } else {
 
     var token = req.headers.authorization.split(' ')[1];
-    console.log('token', token);
+    logger.info('token', token);
 
     //to prevent going over the facebook rate limit we need to store the current token against a user
     //and then check for the token in the header for that user - only check with facebook when the tokenhas expired
@@ -102,21 +103,16 @@ module.exports = function(req, res, next) {
 
     findUserByAccessToken(token).then(function(user){
      if (!user){
-
        validateFacebookToken(token).then(function(data){
          findOrCreateUserByFacebookData(data, token).then(function(user){
            req.user = user
            next();
          });
        });
-
      } else {
-
        var updated_time = moment(user.facebook.token.stored_time).add(1, 'h');
-
        if (updated_time < moment()){
-         console.log('!!!!!!!!!!!!!!!!!!!!!!!!!expired', user.facebook.token.stored_time);
-
+         logger.info('expired token', user.facebook.token.stored_time);
          validateFacebookToken(token).then(function(data){
            findOrCreateUserByFacebookData(data, token).then(function(user){
              req.user = user
@@ -125,16 +121,12 @@ module.exports = function(req, res, next) {
          });
 
        } else {
-         console.log('!!!!!!!!!!!!!!!!!!!!!!!!!NOTexpired', user.facebook.token.stored_time);
+         logger.info('NOT expired token', user.facebook.token.stored_time);
          req.user = user;
          next();
        }
      }
-
    });
-
-
  }
-
 
 }
