@@ -140,7 +140,7 @@ usermanager.prototype = {
 
           //hard coded 10 min sessions - obs parametise
           var nowMinusHour = new Date();
-          nowMinusHour.setSeconds(nowMinusHour.getSeconds() - 1);
+          nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 10);
 
           if (!userSession || !userSession.date || userSession.date < nowMinusHour) {
 
