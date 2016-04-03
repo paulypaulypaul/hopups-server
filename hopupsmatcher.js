@@ -110,6 +110,7 @@ hopupsMatcher.prototype = {
     });
   },
   pageMatch: function(pathname, page){
+    logger.info('testing segment page match for', pathname, page);
     var deferred = Q.defer();
     var matched = false;
 

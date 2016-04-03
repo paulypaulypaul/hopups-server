@@ -190,7 +190,8 @@ describe("Hopups matcher tests", function() {
         name: 'donkeyhopup',
         segments:[{
           listen: 'visits',
-          threshold: 1
+          threshold: 1,
+          operator: 'eq'
         }],
         actions: [{
           name: 'donkeyaction'
@@ -247,7 +248,8 @@ describe("Hopups matcher tests", function() {
         name: 'donkeyhopup2',
         segments:[{
           listen: 'visits',
-          threshold: 2
+          threshold: 2,
+          operator: 'eq'
         }],
         actions: [{
           name: 'donkeyaction'
@@ -259,7 +261,8 @@ describe("Hopups matcher tests", function() {
         segments:[{
           listen: 'visits',
           tag: 'nonmatchingtag',
-          threshold: 1
+          threshold: 1,
+          operator: 'eq'
         }],
         actions: [{
           name: 'donkeyaction'
