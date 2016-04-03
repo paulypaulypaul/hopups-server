@@ -250,6 +250,10 @@ describe("Hopups matcher tests", function() {
           listen: 'visits',
           threshold: 2,
           operator: 'eq'
+        },{
+          listen: 'visits',
+          threshold: 10,
+          operator: 'lt'
         }],
         actions: [{
           name: 'donkeyaction'
