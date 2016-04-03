@@ -7,8 +7,7 @@ var Hopup = require('./models/hopup');
 var Action = require('./models/action');
 var ActionSessionData = require('./models/actionsessiondata')
 var ActionSessionDataTimeSeries = require('./models/actionsessiondatatimeseries');
-var SessionData = require('./models/sessiondata');
-var Event = require('./models/event');
+
 
 var HopupsMatcher = require('./hopupsmatcher')
 
