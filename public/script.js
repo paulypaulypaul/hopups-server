@@ -310,6 +310,10 @@ var start = function(){
           this.attachHTML(actions[i]);
           $( "body" ).trigger( "eventfired", [actions[i]] );
 
+        } else if (actions[i].responsetype === 'html-replace'){
+          this.replaceHTML(actions[i]);
+          $( "body" ).trigger( "eventfired", [actions[i]] );
+
         } else if (actions[i].responsetype === 'template'){
           var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '" width="500" height="400" frameBorder="0"></iframe>');
           //var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '?action=' + actions[i].payload.action + '&actionsessiondata=' + actions[i].payload.actionsessiondata + '" width="500" height="400" frameBorder="0"></iframe>');
@@ -352,6 +356,45 @@ var start = function(){
 
         $.get( item.responsedatalocation , function( data ) {
           $('body').append(data);
+          //add any events to the new html weve added
+          self.wireEvents();
+
+        });
+      }
+    },
+    replaceHTML: function(item){
+      var self = this;
+
+      //here we set the _actionsessiondata and _action values from the item
+      //so that when we are attaching events to the new code we have added
+      //we know we are in action firing mode!
+      this._actionsessiondata = item.payload.actionsessiondata;
+      this._action = item;
+
+      if (item.responsedatafrom === 'code' || item.responsedatafrom === 'predefined'){
+        $(item.elementtoreplace).replaceWith(item.responsedata);
+        //add any events to the new html weve added
+
+        //for events attached as tags
+        var itemToWire = {
+          selector : '[data-hopups-click]',
+          event : 'click',
+          parent : item.payload.actionsessiondata
+        };
+
+        self.wireEvents(itemToWire);
+
+        //$('[data-hopups-click]')
+
+        //for events attached as normal in the ui
+        //for (var j = 0; j < item.actionEvents.length; j++){
+        //  wireEvents(item.actionEvents[j]);
+        //}
+
+      } else if (item.responsedatafrom === 'uri'){
+
+        $.get( item.responsedatalocation , function( data ) {
+          $(item.elementtoreplace).replaceWith(data);
           //add any events to the new html weve added
           self.wireEvents();
 

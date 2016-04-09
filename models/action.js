@@ -11,6 +11,7 @@ var ActionSchema = new Schema({
         siteId: { type: Schema.Types.ObjectId, ref: 'Site' },
         type: { type: String, default: 'and'},
         page: String,
+        elementtoreplace: String,
         responsetype: String,
         responsedatafrom: String,
         responsedatalocation: String,
