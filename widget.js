@@ -70,6 +70,10 @@ router.get('/:id/config', function(req, res) {
       res.end();
     } else {
       Event.find({siteId : site._id, active: true, isActionEvent: {$ne: true}}, function(err, events){
+
+        //here we need a route to fire immidiate events for thing such as dom replace where we want the action to be
+        //as fast as possible
+
         res.send(events);
       });
     }
