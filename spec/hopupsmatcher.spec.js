@@ -10,7 +10,7 @@ describe("Hopups matcher tests", function() {
     done();
   });
 
-
+ /*
   it("should get action if interest segment matches", function(done) {
 
     var user = {
@@ -285,6 +285,74 @@ describe("Hopups matcher tests", function() {
 
     });
 
+  });*/
+
+
+
+  it("should get no action if already in completedHopups for segment", function(done) {
+
+   var user = {
+      sessionData:[
+        {
+          event: {
+            tag : 'matchingtag'
+          }
+        }
+      ],
+      currentSession: {
+        completedHopups : [2]
+      },
+      usersessions: [
+        {}
+      ]
+    };
+
+    var site = {
+      hopups: [{
+        _id: 1,
+        active: true,
+        name: 'donkeyhopup2',
+        segments:[{
+          listen: 'visits',
+          threshold: 2,
+          operator: 'eq'
+        },{
+          listen: 'visits',
+          threshold: 10,
+          operator: 'lt'
+        }],
+        actions: [{
+          name: 'donkeyaction'
+        }]
+      },
+      {
+        _id: 2,
+        active: true,
+        name: 'donkeyhopup',
+        segments:[{
+          listen: 'visits',
+          tag: 'nonmatchingtag',
+          threshold: 1,
+          operator: 'eq'
+        }],
+        actions: [{
+          name: 'donkeyaction'
+        }]
+      }]
+    };
+
+    var hopupsMatcher = new HopupsMatcher(user, site);
+
+    hopupsMatcher.getHopupsToPerform().then(function(hopups){
+
+      expect(hopups.length).toEqual(0);
+
+      done();
+
+    });
+
   });
+
+
 
 });
