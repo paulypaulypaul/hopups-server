@@ -10,7 +10,7 @@ describe("Hopups matcher tests", function() {
     done();
   });
 
- /*
+
   it("should get action if interest segment matches", function(done) {
 
     var user = {
@@ -285,7 +285,7 @@ describe("Hopups matcher tests", function() {
 
     });
 
-  });*/
+  });
 
 
 
@@ -354,5 +354,136 @@ describe("Hopups matcher tests", function() {
   });
 
 
+  it("should get action if already in completedHopups for segment but hopup is delivered multiple times per session", function(done) {
+
+   var user = {
+      sessionData:[
+        {
+          event: {
+            tag : 'matchingtag'
+          }
+        }
+      ],
+      currentSession: {
+        completedHopups : [2]
+      },
+      usersessions: [
+        {}
+      ]
+    };
+
+    var site = {
+      hopups: [{
+        _id: 1,
+        active: true,
+        name: 'donkeyhopup2',
+        segments:[{
+          listen: 'visits',
+          threshold: 2,
+          operator: 'eq'
+        },{
+          listen: 'visits',
+          threshold: 10,
+          operator: 'lt'
+        }],
+        actions: [{
+          name: 'donkeyaction'
+        }]
+      },
+      {
+        _id: 2,
+        timesPerSession: 2,
+        active: true,
+        name: 'donkeyhopup',
+        segments:[{
+          listen: 'visits',
+          tag: 'nonmatchingtag',
+          threshold: 1,
+          operator: 'eq'
+        }],
+        actions: [{
+          name: 'donkeyaction'
+        }]
+      }]
+    };
+
+    var hopupsMatcher = new HopupsMatcher(user, site);
+
+    hopupsMatcher.getHopupsToPerform().then(function(hopups){
+
+      expect(hopups.length).toEqual(1);
+      expect(hopups[0].name).toEqual('donkeyhopup');
+
+      done();
+
+    });
+
+  });
+
+
+  it("should not get action if already in completedHopups for segment but hopup is delivered already above the per session number", function(done) {
+
+   var user = {
+      sessionData:[
+        {
+          event: {
+            tag : 'matchingtag'
+          }
+        }
+      ],
+      currentSession: {
+        completedHopups : [2,2,2,2]
+      },
+      usersessions: [
+        {}
+      ]
+    };
+
+    var site = {
+      hopups: [{
+        _id: 1,
+        active: true,
+        name: 'donkeyhopup2',
+        segments:[{
+          listen: 'visits',
+          threshold: 2,
+          operator: 'eq'
+        },{
+          listen: 'visits',
+          threshold: 10,
+          operator: 'lt'
+        }],
+        actions: [{
+          name: 'donkeyaction'
+        }]
+      },
+      {
+        _id: 2,
+        timesPerSession: 4,
+        active: true,
+        name: 'donkeyhopup',
+        segments:[{
+          listen: 'visits',
+          tag: 'nonmatchingtag',
+          threshold: 1,
+          operator: 'eq'
+        }],
+        actions: [{
+          name: 'donkeyaction'
+        }]
+      }]
+    };
+
+    var hopupsMatcher = new HopupsMatcher(user, site);
+
+    hopupsMatcher.getHopupsToPerform().then(function(hopups){
+
+      expect(hopups.length).toEqual(0);
+
+      done();
+
+    });
+
+  });
 
 });

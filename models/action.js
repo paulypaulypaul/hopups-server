@@ -17,8 +17,6 @@ var ActionSchema = new Schema({
         responsedatalocation: String,
         responsedata:String,
         responsePredefinedTemplate: String,
-        multiPage: String,
-        multiSession: String,
         events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
         payload: { type: {}, default: {} },
         templateAttributes: {},

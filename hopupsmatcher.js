@@ -41,10 +41,10 @@ hopupsMatcher.prototype = {
     var deferred = Q.defer();
     this.checkHopups(this.hopups, this.user).then(function(matchingHopups){
       self.filterPerformedHopups(matchingHopups, self.user).then(function(matchingAndFilteredHopups){
-         logger.info('wtf', matchingAndFilteredHopups);
+        logger.info('wtf', matchingAndFilteredHopups);
         deferred.resolve(matchingAndFilteredHopups);
-      });
-    });
+      }).done();
+    }).done();
     return deferred.promise;
   },
   checkHopups: function(hopups, user){
@@ -64,7 +64,7 @@ hopupsMatcher.prototype = {
     Q.all(promises).then(function(hopups){
       logger.info('checkHopups all resolved', hopups.length);
       deferred.resolve(hopups);
-    });
+    }).done();
 
     return deferred.promise;
   },
@@ -144,9 +144,21 @@ hopupsMatcher.prototype = {
 
     for (var i = 0; i < matchingHopups.length; i++){
       //we have to check for undefineds here
-      if (matchingHopups[i] && user.currentSession.completedHopups.indexOf(matchingHopups[i]._id) < 0){
+      if (matchingHopups[i]){
+        if (user.currentSession.completedHopups.indexOf(matchingHopups[i]._id) < 0 ){
           matchingAndFilteredHopups.push(matchingHopups[i]);
+        } else if (matchingHopups[i].timesPerSession && matchingHopups[i].timesPerSession > 1){
+
+          var filtered = user.currentSession.completedHopups.filter(function(it) {
+            return it === matchingHopups[i]._id;
+          });
+          
+          if (filtered.length < matchingHopups[i].timesPerSession){
+            matchingAndFilteredHopups.push(matchingHopups[i]);
+          }
+        }
       }
+
     }
 
     logger.info('filterPerformedHopups returning', matchingAndFilteredHopups.length);
