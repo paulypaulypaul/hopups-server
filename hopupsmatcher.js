@@ -152,7 +152,7 @@ hopupsMatcher.prototype = {
           var filtered = user.currentSession.completedHopups.filter(function(it) {
             return it === matchingHopups[i]._id;
           });
-          
+
           if (filtered.length < matchingHopups[i].timesPerSession){
             matchingAndFilteredHopups.push(matchingHopups[i]);
           }
@@ -202,7 +202,7 @@ hopupsMatcher.prototype = {
     inactive: function(segment, user){
 
       var now = new Date();
-      var lastActiveThreshold = now.setSeconds(now.getSeconds() - segment.threshold);
+      var lastActiveThreshold = now.getTime() - (segment.threshold * 1000);
 
       logger.info('user.lastActive < lastActiveThreshold', user.lastActive < lastActiveThreshold, user.lastActive, lastActiveThreshold);
 
