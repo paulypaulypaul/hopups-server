@@ -25,15 +25,20 @@ router.post('/sync', function(req, res) {
   var queryString = req.body.queryString;
   var clientVariable = req.body.clientVariable;
   var location = req.body.location;
+  var InitialPageView = req.body.InitialPageView;
 
   logger.info('findOrCreateUserById');
   userManager.findOrCreateUserById(payloadUserId, siteId).then(function(user){
+
     logger.info('addQueryStringToUserSession');
     userManager.addQueryStringToUserSession(user, queryString).then(function(user){
+
       logger.info('addClientVariableToUserSession');
       userManager.addClientVariableToUserSession(user, clientVariable).then(function(user){
+
         logger.info('addLocationToUserSession');
         userManager.addLocationToUserSession(user, location).then(function(user){
+
           logger.info('allocatePhoneNumber');
           phoneNumberAllocator.allocatePhoneNumber(user).then(function(user){
 
@@ -71,7 +76,7 @@ router.post('/sync', function(req, res) {
               });
             }
 
-            if (dataQ.length > 0){
+            if (dataQ.length > 0 || InitialPageView){
               logger.info('Have data q to deal with');
               //user has acted to set last action to now
               userManager.resetLastActive(user).then(function(){

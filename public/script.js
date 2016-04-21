@@ -233,7 +233,8 @@
         dataQ: currentDataQ,
         queryString: self.getQueryString(),
         location: self.getLocation(),
-        clientVariable: clientVariable || {}
+        clientVariable: clientVariable || {},
+        InitialPageView: !self._registeredInitialPageView
       }
 
       if (sessionData.data){
