@@ -48,11 +48,11 @@ router.get('/:id', function(req, res) {
           }
         ));
 
-        var result = UglifyJS.minify(data, {
-          fromString: true
-        });
+      //  var result = UglifyJS.minify(data, {
+      //    fromString: true
+    //    });
 
-        res.send(result.code);
+        res.send(data);
       });
     }
   });
