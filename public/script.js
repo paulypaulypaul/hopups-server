@@ -402,11 +402,12 @@
   }
 
   var clientApp;
+  var sessionData;
   var start = function(){
 
     clientApp = new ClientApp([%CONFIG%]);
 
-    var sessionData = new SessionData();
+    sessionData = new SessionData();
     sessionData.getFromSession();
     sessionData.data.lastActive = new Date().getTime();
 
