@@ -117,6 +117,8 @@
           //add the parent session instance to the event so when it if sent to the server
           //it can be matched to an action instance
           this._action.events[i].parent = this._actionsessiondata;
+          //augment selector with action id
+          this._action.events[i].selector = this._action.events[i].selector + '-' + this._action._id;
           if (this.pageMatch(this._action.events[i])){
             this.addEvent(this._action.events[i])
           }
@@ -135,7 +137,9 @@
   addEvent: function(itemToWire){
       var self = this;
       $(itemToWire.selector).each(function() {
-          $(this).on(itemToWire.event, function(event, eventItem) {
+          $(this)
+          .off('.hopup')
+          .on(itemToWire.event + '.hopup', function(event, eventItem) {
 
             var item = itemToWire;
             var type = 'event';
