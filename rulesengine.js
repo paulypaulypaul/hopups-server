@@ -15,12 +15,13 @@ var HopupsMatcher = require('./hopupsmatcher')
 var logger = require('./lib/logger').create("RULES ENGINE");
 
 var moment = require('moment');
+var _ = require('lodash');
 
 var rulesEngine = function () {
 };
 
 rulesEngine.prototype = {
-  getClientActions : function(user){
+  getClientActions : function(user, completedActions){
     var self = this;
     var deferred = Q.defer();
 
@@ -39,7 +40,7 @@ rulesEngine.prototype = {
                 for (var i = 0; i < hopupsToPerform.length; i++){
                   //hopups should always have a action otherwise no point but check here anyway
                   if (hopupsToPerform[i].actions.length > 0){
-                    promises.push(self.getActionToPerform(hopupsToPerform[i], user));
+                    promises.push(self.getActionToPerform(hopupsToPerform[i], user, completedActions));
                   }
                 }
                 Q.all(promises).then(function(actions){
@@ -59,70 +60,80 @@ rulesEngine.prototype = {
 
     return deferred.promise;
   },
-  getActionToPerform: function(hopup, user){
+  getActionToPerform: function(hopup, user, completedActions){
     var deferred = Q.defer();
 
-    //if multiple actions on the hopup randomly choose which one to send - jus for now.
-    var rand = Math.floor(Math.random() * hopup.actions.length);
-    var actionId = hopup.actions[rand];
-
-    //get populted action from id;
-    this.populateAction(actionId).then(function(action){
-
-      //removed this as i think we only need event son the actions
-      //push hopups events to this action
-      //action.events = action.events.concat(hopupsToPerform[i].events)
-
-      //actions.push(action);
-
-      var objToSave = {
-        "datetime"  : new Date(),
-
-        "userId"    : user._id,
-        "sessionId" : user.currentSession,
-        "siteId"    : user.siteId,
-        "action"    : action._id,
-        "hopup"     : hopup._id
-      }
-
-      var actionsessiondata = new ActionSessionData(objToSave);
-      actionsessiondata.save(function(err, actionsessiondata) {
-          if (err) return console.error(err);
-
-          //yes this will only work for one hopup - just proving a concept
-          action.payload = {};
-          action.payload.actionsessiondata = actionsessiondata._id;
-          action.payload.action = actionsessiondata.action;
-          deferred.resolve(action);
-      });
-
-
-      //look for item that starts at the start of this min
-      //if we find add record to it
-      //else create a new one and add to it
-      var timeSeriesStartMinute = moment().startOf('minute');
-      var timeSeriesEndMinute = timeSeriesStartMinute.clone().add(1, 'm');
-
-      ActionSessionDataTimeSeries.findOne({dateTime : {$gte: timeSeriesStartMinute.toDate(), $lt: timeSeriesEndMinute.toDate() }, siteId : mongoose.Types.ObjectId(user.siteId)} , function(err, actionSessionDataSchemaTimeSeries){
-        if (actionSessionDataSchemaTimeSeries){
-          actionSessionDataSchemaTimeSeries.data.push(objToSave);
-        } else {
-          actionSessionDataSchemaTimeSeries = new ActionSessionDataTimeSeries({
-            siteId : user.siteId,
-            dateTime: timeSeriesStartMinute,
-            data: [objToSave]
-          });
-        }
-
-        actionSessionDataSchemaTimeSeries.save(function(err, actionsessiondata) {
-              if (err) return console.error(err);
-
-              //yes we just do nothing at the moment -
-              // will soon swapp this method with the one above and return the deferred when its deon
-        });
-      });
+    //first remove actions that are currently on the users screen
+    var actions = _.filter(hopup.actions, function(n) {
+      return completedActions.indexOf(n.toString()) < 0 ;
     });
 
+    if (actions.length < 1){
+      deferred.resolve();
+    } else {
+
+      //if multiple actions on the hopup randomly choose which one to send - jus for now.
+      var rand = Math.floor(Math.random() * actions.length);
+      var actionId = actions[rand];
+
+      //get populted action from id;
+      this.populateAction(actionId).then(function(action){
+
+        //removed this as i think we only need event son the actions
+        //push hopups events to this action
+        //action.events = action.events.concat(hopupsToPerform[i].events)
+
+        //actions.push(action);
+
+        var objToSave = {
+          "datetime"  : new Date(),
+
+          "userId"    : user._id,
+          "sessionId" : user.currentSession,
+          "siteId"    : user.siteId,
+          "action"    : action._id,
+          "hopup"     : hopup._id
+        }
+
+        var actionsessiondata = new ActionSessionData(objToSave);
+        actionsessiondata.save(function(err, actionsessiondata) {
+            if (err) return console.error(err);
+
+            //yes this will only work for one hopup - just proving a concept
+            action.payload = {};
+            action.payload.actionsessiondata = actionsessiondata._id;
+            action.payload.action = actionsessiondata.action;
+            deferred.resolve(action);
+        });
+
+
+        //look for item that starts at the start of this min
+        //if we find add record to it
+        //else create a new one and add to it
+        var timeSeriesStartMinute = moment().startOf('minute');
+        var timeSeriesEndMinute = timeSeriesStartMinute.clone().add(1, 'm');
+
+        ActionSessionDataTimeSeries.findOne({dateTime : {$gte: timeSeriesStartMinute.toDate(), $lt: timeSeriesEndMinute.toDate() }, siteId : mongoose.Types.ObjectId(user.siteId)} , function(err, actionSessionDataSchemaTimeSeries){
+          if (actionSessionDataSchemaTimeSeries){
+            actionSessionDataSchemaTimeSeries.data.push(objToSave);
+          } else {
+            actionSessionDataSchemaTimeSeries = new ActionSessionDataTimeSeries({
+              siteId : user.siteId,
+              dateTime: timeSeriesStartMinute,
+              data: [objToSave]
+            });
+          }
+
+          actionSessionDataSchemaTimeSeries.save(function(err, actionsessiondata) {
+                if (err) return console.error(err);
+
+                //yes we just do nothing at the moment -
+                // will soon swapp this method with the one above and return the deferred when its deon
+          });
+        });
+      });
+
+    }
 
     return deferred.promise;
   },

@@ -238,7 +238,8 @@
         queryString: self.getQueryString(),
         location: self.getLocation(),
         clientVariable: clientVariable || {},
-        InitialPageView: !self._registeredInitialPageView
+        InitialPageView: !self._registeredInitialPageView,
+        completedActions: self.completedActions
       }
 
       if (sessionData.data){
@@ -304,24 +305,33 @@
         $('#phoneNo').html(number);
       }
     },
+    completedActions : [],
     actionActions: function(actions){
       //these are the events we get back from the server - the will be action immidiatly
       //mabee we could send down event to soon be required to they are there immidiatly - hmmmmm.
       for (var i = 0; i < actions.length; i++){
 
-        if (actions[i].responsetype === 'html'){
-          this.attachHTML(actions[i]);
-          $( "body" ).trigger( "eventfired", [actions[i]] );
+        //checks if the action has already been applied to the page before it
+        //adds it again - but the server still sends it down so we need to send
+        //completedActions to the server to prevent firing in the first place
+        if (this.completedActions.indexOf(actions[i]._id) < 0){
+          this.completedActions.push(actions[i]._id);
 
-        } else if (actions[i].responsetype === 'html-replace'){
-          this.replaceHTML(actions[i]);
-          $( "body" ).trigger( "eventfired", [actions[i]] );
+          if (actions[i].responsetype === 'html'){
+            this.attachHTML(actions[i]);
+            $( "body" ).trigger( "eventfired", [actions[i]] );
 
-        } else if (actions[i].responsetype === 'template'){
-          var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '" width="500" height="400" frameBorder="0"></iframe>');
-          //var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '?action=' + actions[i].payload.action + '&actionsessiondata=' + actions[i].payload.actionsessiondata + '" width="500" height="400" frameBorder="0"></iframe>');
-          justTextModal.show();
-          $( "body" ).trigger( "eventfired", [actions[i]] );
+          } else if (actions[i].responsetype === 'html-replace'){
+            this.replaceHTML(actions[i]);
+            $( "body" ).trigger( "eventfired", [actions[i]] );
+
+          } else if (actions[i].responsetype === 'template'){
+            var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '" width="500" height="400" frameBorder="0"></iframe>');
+            //var justTextModal = nanoModal('<iframe src="' + actions[i].responsedatalocation + '?action=' + actions[i].payload.action + '&actionsessiondata=' + actions[i].payload.actionsessiondata + '" width="500" height="400" frameBorder="0"></iframe>');
+            justTextModal.show();
+            $( "body" ).trigger( "eventfired", [actions[i]] );
+          }
+
         }
 
       }

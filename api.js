@@ -27,6 +27,9 @@ router.post('/sync', function(req, res) {
   var location = req.body.location;
   var InitialPageView = req.body.InitialPageView;
 
+  //completed actions currently on the browser of the user
+  var completedActions = req.body.completedActions;
+
   logger.info('findOrCreateUserById');
   userManager.findOrCreateUserById(payloadUserId, siteId).then(function(user){
 
@@ -68,7 +71,7 @@ router.post('/sync', function(req, res) {
             }
 
             var sendResponce = function(user){
-              rulesEngine.getClientActions(user).then(function(actions){
+              rulesEngine.getClientActions(user, completedActions).then(function(actions){
                 res.send({
                   'user': user,
                   'actions': actions
