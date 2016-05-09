@@ -101,12 +101,15 @@ router.get('/sites/:siteId/:type', verifyFacebookUserAccessToken, function(req, 
                 res.send(sessiondata);
               });
             } else if (type === 'actionsessiondata'){
-              ActionSessionData.find({ siteId : req.params.siteId })
+              var twoWeeksAgo = new Date();
+              twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+              ActionSessionData.find({ siteId : req.params.siteId, date: { $gte :  twoWeeksAgo} })
               //.populate('segments')
               .exec(function(err, actionsessiondata){
                 res.send(actionsessiondata);
               });
-            } else if (type === 'actionsessiondatatimseries'){
+            } else if (type === 'actionsessiondatatimeseries'){
               ActionSessionDataTimeSeries.find({ siteId : req.params.siteId })
               //.populate('segments')
               .exec(function(err, actionsessiondatatimseries){
