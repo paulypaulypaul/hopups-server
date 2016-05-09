@@ -127,47 +127,56 @@ usermanager.prototype = {
     var self = this;
     var deferred = Q.defer();
 
-    this.findUser(id, siteId).then(function(user){
-      if (!user){
-        self.createNewUser(siteId).then(function(user){
-          deferred.resolve(user);
-        });
-      } else {
-        //we have a user
-        //now we check if the session is 'old' and create a new one if needed
-        UserSession.findOne({_id: user.currentSession}, function(err, userSession){
+    if (id === 'none'){
+      self.createNewUser(siteId).then(function(user){
+        deferred.resolve(user);
+      });
+    } else {
+      this.findUser(id, siteId).then(function(user){
+        if (!user){
+          self.createNewUser(siteId).then(function(user){
+            deferred.resolve(user);
+          });
+        } else {
+          //we have a user
+          //now we check if the session is 'old' and create a new one if needed
+          UserSession.findOne({_id: user.currentSession}, function(err, userSession){
 
 
-          //hard coded 10 min sessions - obs parametise
-          var nowMinusHour = new Date();
-          nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 10);
+            //hard coded 10 min sessions - obs parametise
+            var nowMinusHour = new Date();
+            nowMinusHour.setMinutes(nowMinusHour.getMinutes() - 10);
 
-          if (!userSession || !userSession.date || userSession.date < nowMinusHour) {
+            if (!userSession || !userSession.date || userSession.date < nowMinusHour) {
 
-            logger.info('new user session for', userSession.user );
+              logger.info('new user session for', userSession.user );
 
-            var userSession = new UserSession();
-            userSession.user = user._id;
-            userSession.save(function(err, userSession) {
-              user.currentSession = userSession._id;
+              var userSession = new UserSession();
+              userSession.user = user._id;
+              userSession.save(function(err, userSession) {
+                user.currentSession = userSession._id;
 
-              user.save(function(err, user) {
-                  if (err) return console.error(err);
+                user.save(function(err, user) {
+                    if (err) return console.error(err);
 
-                  SiteUser.populate(user, {path:"currentSession"}, function(err, user) {
-                    deferred.resolve(user);
-                  });
+                    SiteUser.populate(user, {path:"currentSession"}, function(err, user) {
+                      deferred.resolve(user);
+                    });
+
+                });
 
               });
 
-            });
+            } else {
+              deferred.resolve(user);
+            }
+          });
+        }
+      });
 
-          } else {
-            deferred.resolve(user);
-          }
-        });
-      }
-    });
+    }
+
+
     return deferred.promise;
   },
   findUser: function(id, siteId){
