@@ -117,8 +117,12 @@
           //add the parent session instance to the event so when it if sent to the server
           //it can be matched to an action instance
           this._action.events[i].parent = this._actionsessiondata;
-          //augment selector with action id
-          this._action.events[i].selector = this._action.events[i].selector + '-' + this._action._id;
+
+          //augment selector with action id if we are adding html - not the replace pathway
+          if (this._action.responsetype !== "html-replace"){
+            this._action.events[i].selector = this._action.events[i].selector + '-' + this._action._id;
+          }
+          
           if (this.pageMatch(this._action.events[i])){
             this.addEvent(this._action.events[i])
           }
