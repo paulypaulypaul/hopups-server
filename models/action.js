@@ -18,6 +18,7 @@ var ActionSchema = new Schema({
         responsedata:String,
         responsePredefinedTemplate: String,
         events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+        eventKPI: { type: Schema.Types.ObjectId, ref: 'Event' },
         payload: { type: {}, default: {} },
         templateAttributes: {},
         active: { type: Boolean, default: true },
