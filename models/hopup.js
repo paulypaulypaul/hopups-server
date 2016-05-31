@@ -14,6 +14,7 @@ var HopupSchema = new Schema({
         actions: [{ type: Schema.Types.ObjectId, ref: 'Action' }],
         segments: [{ type: Schema.Types.ObjectId, ref: 'Segment' }],
         events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+        eventKPI: { type: Schema.Types.ObjectId, ref: 'Event' },
 
         multiPage: { type: Boolean, default: true }, //should events for one session be collected over mulitple pages
         multiSession: { type: Boolean, default: true }, //should events be collected over multiple sessions
