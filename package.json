@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "appdynamics": "^4.2.11",
     "body-parser": "1.5.2",
     "compression": "^1.6.1",
     "datejs": "1.0.0-rc3",
