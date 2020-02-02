@@ -1,12 +1,4 @@
-require("appdynamics").profile({
- controllerHostName: 'paid96.saas.appdynamics.com',
- controllerPort: 80, 
-   accountName: 'hopups',
- accountAccessKey: '036fmqfa43uv',
- applicationName: 'hopups',
- tierName: 'server',
- nodeName: 'process' // The controller will automatically append the node name with a unique number
-});
+
 
 var http = require('http');
 var express = require('express');
