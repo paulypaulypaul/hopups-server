@@ -60,6 +60,6 @@ grunt.initConfig({
 
 grunt.loadNpmTasks('grunt-jasmine-nodejs');
 
-grunt.registerTask('default', 'jasmine_node');
+grunt.registerTask('default', 'jasmine_nodejs');
 
 };

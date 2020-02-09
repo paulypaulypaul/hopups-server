@@ -6,7 +6,7 @@ var SiteUser = require('../models/siteuser');
 
 var PhoneNumberAllocator = require('../phonenumberallocator');
 var phoneNumberAllocator = new PhoneNumberAllocator();
-
+/*
 describe("Rules engine tests", function() {
   var connection;
   var site;
@@ -72,3 +72,4 @@ describe("Rules engine tests", function() {
   });
 
 });
+*/
