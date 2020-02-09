@@ -23,3 +23,9 @@ patch:
         patched: '2020-02-09T14:47:37.695Z'
     - jade > transformers > uglify-js:
         patched: '2020-02-09T14:47:37.695Z'
+  'npm:debug:20170905':
+    - snyk > proxy-agent > pac-proxy-agent > get-uri > debug:
+        patched: '2020-02-09T14:54:21.732Z'
+  'npm:ms:20170412':
+    - snyk > proxy-agent > pac-proxy-agent > get-uri > debug > ms:
+        patched: '2020-02-09T14:54:21.732Z'
