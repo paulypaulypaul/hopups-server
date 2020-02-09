@@ -19,7 +19,7 @@
     "express": "4.16.0",
     "express-session": "1.15.6",
     "jade": "1.8.0",
-    "lodash": "^4.17.12",
+    "lodash": "^4.17.13",
     "method-override": "2.3.10",
     "moment": "^2.19.3",
     "mongoose": "5.7.5",
