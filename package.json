@@ -30,7 +30,7 @@
     "serve-favicon": "2.4.5",
     "snyk": "^1.290.2",
     "uglify-js": "^2.6.2",
-    "underscore": "^1.8.3",
+    "underscore": "^1.13.0",
     "url-parse": "^1.4.6"
   },
   "devDependencies": {
