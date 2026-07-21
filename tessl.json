@@ -1,0 +1,12 @@
+{
+  "name": "hopups-server",
+  "mode": "vendored",
+  "dependencies": {
+    "tessl-labs/spec-driven-development": {
+      "version": "2.0.1"
+    }
+  },
+  "agents": [
+    "claude-code"
+  ]
+}

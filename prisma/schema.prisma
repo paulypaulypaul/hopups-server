@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Visitor {
+  id        String   @id
+  createdAt DateTime @default(now())
+
+  sessions Session[]
+  users    User[]
+  events   VisitorEvent[]
+}
+
+model Session {
+  id                  String   @id @default(cuid())
+  visitorId           String
+  siteId              String
+  lastActiveAt        DateTime @default(now())
+  completedActionIds  String[] @default([])
+  createdAt           DateTime @default(now())
+
+  visitor Visitor @relation(fields: [visitorId], references: [id])
+  site    Site    @relation(fields: [siteId], references: [id])
+  allocation PhoneNumberAllocation?
+  events  VisitorEvent[]
+
+  @@index([visitorId, siteId, lastActiveAt])
+}
+
+model VisitorEvent {
+  id         String   @id @default(cuid())
+  visitorId  String
+  siteId     String
+  sessionId  String
+  type       String
+  path       String?
+  payload    Json?
+  occurredAt DateTime
+
+  visitor Visitor @relation(fields: [visitorId], references: [id])
+  site    Site    @relation(fields: [siteId], references: [id])
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@index([visitorId, siteId, type])
+}
+
+model Site {
+  id            String   @id @default(cuid())
+  name          String
+  defaultNumber String?
+  createdAt     DateTime @default(now())
+
+  sessions      Session[]
+  hopups        Hopup[]
+  phoneNumbers  PhoneNumber[]
+  allocations   PhoneNumberAllocation[]
+  actionEvents  ActionEvent[]
+  rollupBuckets RollupBucket[]
+  events        VisitorEvent[]
+}
+
+model PhoneNumber {
+  id     String @id @default(cuid())
+  siteId String
+  number String
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@unique([siteId, number])
+}
+
+model PhoneNumberAllocation {
+  id           String   @id @default(cuid())
+  siteId       String
+  sessionId    String   @unique
+  phoneNumber  String
+  allocatedAt  DateTime @default(now())
+
+  site    Site    @relation(fields: [siteId], references: [id])
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@unique([siteId, phoneNumber])
+}
+
+model Hopup {
+  id              String  @id @default(cuid())
+  siteId          String
+  active          Boolean @default(true)
+  conditions      Json    @default("[]")
+  repeatAllowance Int     @default(1)
+  createdAt       DateTime @default(now())
+
+  site    Site     @relation(fields: [siteId], references: [id])
+  actions Action[]
+  actionEvents  ActionEvent[]
+  rollupBuckets RollupBucket[]
+}
+
+model Action {
+  id      String @id @default(cuid())
+  hopupId String
+  type    String
+  payload Json
+
+  hopup Hopup @relation(fields: [hopupId], references: [id])
+  actionEvents ActionEvent[]
+}
+
+model ActionEvent {
+  id         String   @id @default(cuid())
+  siteId     String
+  hopupId    String
+  actionId   String
+  visitorId  String
+  sessionId  String
+  shownAt    DateTime @default(now())
+
+  site   Site   @relation(fields: [siteId], references: [id])
+  hopup  Hopup  @relation(fields: [hopupId], references: [id])
+  action Action @relation(fields: [actionId], references: [id])
+
+  @@index([siteId, hopupId, shownAt])
+}
+
+model RollupBucket {
+  id            String   @id @default(cuid())
+  siteId        String
+  hopupId       String
+  intervalStart DateTime
+  count         Int      @default(0)
+
+  site  Site  @relation(fields: [siteId], references: [id])
+  hopup Hopup @relation(fields: [hopupId], references: [id])
+
+  @@unique([siteId, hopupId, intervalStart])
+}
+
+model User {
+  id             String  @id @default(cuid())
+  provider       String
+  providerUserId String
+  displayName    String?
+  email          String?
+  visitorId      String?
+
+  visitor Visitor? @relation(fields: [visitorId], references: [id])
+
+  @@unique([provider, providerUserId])
+}

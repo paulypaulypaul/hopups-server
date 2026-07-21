@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo *)",
+      "Bash(gh api *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find / -path /System -prune -o -iname \"spec-styleguide.md\" -print)",
+      "Bash(find / -path /System -prune -o -iname \"spec-format.md\" -print)",
+      "Bash(npm --version)",
+      "Bash(docker --version)",
+      "Bash(psql --version)",
+      "Bash(npx --version)",
+      "Bash(npm install *)",
+      "Bash(docker compose *)",
+      "Bash(npx prisma *)",
+      "Bash(npx vitest *)",
+      "Bash(node *)",
+      "Bash(npx tsc *)",
+      "Bash(curl *)",
+      "Bash(set -e)",
+      "Bash(pkill -f \"tsx src/index.ts\")",
+      "Bash(find / -path /System -prune -o -iname \"validate-specs.sh\" -print)",
+      "Bash(find / -path /System -prune -o -iname \"check-spec-links.sh\" -print)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "tessl"
+  ]
+}
