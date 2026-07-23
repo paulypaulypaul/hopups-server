@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     data: {
       siteId: site.id,
       active: true,
-      conditions: [{ signal: "page.path", operator: "eq", value: "/jackets" }],
+      conditions: [{ signal: "page.path", operator: "matches", value: ".*" }],
       repeatAllowance: 1,
       actions: {
         create: [{ type: "phoneNumberSwap", payload: { selector: ".phone-number" } }]

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { loadLoaderModule } from "../../helpers/loaderModule.js";
+import { createMemoryStorage } from "../../helpers/dom.js";
 
 describe("widget loader config fetching", () => {
   it("fetches config using the discovered site id and stores it for later sync calls", async () => {
@@ -9,8 +10,9 @@ describe("widget loader config fetching", () => {
       src: "http://localhost:3000/widget/loader.js"
     };
     const doc = { currentScript: scriptEl };
-    const win: { location: { origin: string }; __hopupsConfig?: unknown } = {
-      location: { origin: "http://localhost:3000" }
+    const win: { location: { origin: string }; localStorage: unknown; __hopupsConfig?: unknown } = {
+      location: { origin: "http://localhost:3000" },
+      localStorage: createMemoryStorage()
     };
     const fetchImpl = vi.fn(async () => ({
       json: async () => ({ siteId: "site-123", syncUrl: "http://localhost:3000/api/sync" })
