@@ -12,7 +12,7 @@ candidate **actions**. When a hopup's conditions all match a visitor's session, 
 is picked and returned to the widget (see [Sync API](./sync-api.spec.md)).
 
 ```typescript
-type ActionType = "modal" | "banner" | "phoneNumberSwap" | "redirect" | "customHtml";
+type ActionType = "modal" | "banner" | "phoneNumberSwap" | "redirect" | "customHtml" | "sidebar";
 
 interface ModalActionPayload {
   title: string;
@@ -40,12 +40,21 @@ interface CustomHtmlActionPayload {
   html: string;
 }
 
+interface SidebarActionPayload {
+  position: "left" | "right"; // which edge the panel docks to
+  title?: string;
+  message: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+}
+
 type ActionPayload =
   | ModalActionPayload
   | BannerActionPayload
   | PhoneNumberSwapActionPayload
   | RedirectActionPayload
-  | CustomHtmlActionPayload;
+  | CustomHtmlActionPayload
+  | SidebarActionPayload;
 
 interface Action {
   id: string;
@@ -82,6 +91,7 @@ function pickAction(hopup: Hopup): Action;
   `[@test] ../tests/domain/hopups/validate-phone-swap-payload.test.ts`
   `[@test] ../tests/domain/hopups/validate-redirect-payload.test.ts`
   `[@test] ../tests/domain/hopups/validate-custom-html-payload.test.ts`
+  `[@test] ../tests/domain/hopups/validate-sidebar-payload.test.ts`
 - A hopup must have at least one action; a hopup with zero actions is rejected at create/update
   time.
   `[@test] ../tests/domain/hopups/reject-hopup-without-actions.test.ts`

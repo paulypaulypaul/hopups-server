@@ -16,6 +16,7 @@ export interface LoaderModule {
   renderBanner: (doc: any, payload: { message: string; ctaLabel?: string; ctaUrl?: string }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   renderModal: (doc: any, payload: { title: string; body: string; ctaLabel?: string; ctaUrl?: string }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   renderCustomHtml: (doc: any, payload: { html: string }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  renderSidebar: (doc: any, payload: { position: "left" | "right"; title?: string; message: string; ctaLabel?: string; ctaUrl?: string }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   performRedirect: (win: any, payload: { url: string; delayMs?: number }) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   init: (
     doc: { currentScript: unknown },

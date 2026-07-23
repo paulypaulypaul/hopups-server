@@ -107,7 +107,31 @@ async function main(): Promise<void> {
     }
   });
 
-  console.log(`Seeded demo site "Coats N Stuff" (${site.id}) with 5 example hopups`);
+  // Fires only with ?promo=sidebar — demonstrates the sidebar action.
+  await prisma.hopup.create({
+    data: {
+      siteId: site.id,
+      active: true,
+      conditions: [{ signal: "query.promo", operator: "eq", value: "sidebar" }],
+      repeatAllowance: 1,
+      actions: {
+        create: [
+          {
+            type: "sidebar",
+            payload: {
+              position: "right",
+              title: "Winter Sale",
+              message: "20% off all jackets this week.",
+              ctaLabel: "Browse jackets",
+              ctaUrl: "#jackets"
+            }
+          }
+        ]
+      }
+    }
+  });
+
+  console.log(`Seeded demo site "Coats N Stuff" (${site.id}) with 6 example hopups`);
 }
 
 main()

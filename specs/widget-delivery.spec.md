@@ -69,6 +69,9 @@ The loader applies whatever `actions` come back in the sync response, dispatchin
   `[@test] ../tests/api/widget/loader-renders-custom-html.test.ts`
 - `redirect` — sets `window.location.href` to `payload.url` after `payload.delayMs` (default `0`).
   `[@test] ../tests/api/widget/loader-performs-redirect.test.ts`
+- `sidebar` — appends a closable panel docked to `payload.position` (`"left"` or `"right"`) with
+  `payload.title` (optional), `payload.message`, and an optional CTA link, to `document.body`.
+  `[@test] ../tests/api/widget/loader-renders-sidebar.test.ts`
 - An empty `actions` array renders nothing.
   `[@test] ../tests/api/widget/loader-empty-actions-renders-nothing.test.ts`
 

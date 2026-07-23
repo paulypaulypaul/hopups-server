@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ActionTypeSchema = z.enum(["modal", "banner", "phoneNumberSwap", "redirect", "customHtml"]);
+export const ActionTypeSchema = z.enum(["modal", "banner", "phoneNumberSwap", "redirect", "customHtml", "sidebar"]);
 export type ActionType = z.infer<typeof ActionTypeSchema>;
 
 export const modalPayloadSchema = z.object({
@@ -29,12 +29,21 @@ export const customHtmlPayloadSchema = z.object({
   html: z.string()
 });
 
+export const sidebarPayloadSchema = z.object({
+  position: z.enum(["left", "right"]),
+  title: z.string().optional(),
+  message: z.string(),
+  ctaLabel: z.string().optional(),
+  ctaUrl: z.string().optional()
+});
+
 export const actionPayloadSchemas: Record<ActionType, z.ZodTypeAny> = {
   modal: modalPayloadSchema,
   banner: bannerPayloadSchema,
   phoneNumberSwap: phoneNumberSwapPayloadSchema,
   redirect: redirectPayloadSchema,
-  customHtml: customHtmlPayloadSchema
+  customHtml: customHtmlPayloadSchema,
+  sidebar: sidebarPayloadSchema
 };
 
 export function validateActionPayload(type: ActionType, payload: unknown): unknown {

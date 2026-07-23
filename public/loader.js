@@ -63,6 +63,12 @@
       ".hopups-modal{background:#fff;padding:1.5rem;border-radius:4px;max-width:320px;" +
       "position:relative;font-family:sans-serif;}" +
       ".hopups-modal button{position:absolute;top:.5rem;right:.5rem;border:none;background:none;" +
+      "font-size:1.2rem;cursor:pointer;}" +
+      ".hopups-sidebar{position:fixed;top:0;bottom:0;width:280px;background:#fff;" +
+      "box-shadow:0 0 12px rgba(0,0,0,.25);padding:1.5rem;z-index:9999;font-family:sans-serif;}" +
+      ".hopups-sidebar.hopups-sidebar-left{left:0;}" +
+      ".hopups-sidebar.hopups-sidebar-right{right:0;}" +
+      ".hopups-sidebar button{position:absolute;top:.5rem;right:.5rem;border:none;background:none;" +
       "font-size:1.2rem;cursor:pointer;}";
     doc.head.appendChild(style);
   }
@@ -133,6 +139,39 @@
     doc.body.appendChild(container);
   }
 
+  function renderSidebar(doc, payload) {
+    ensureStyles(doc);
+    var panel = doc.createElement("div");
+    panel.className = "hopups-sidebar hopups-sidebar-" + (payload.position === "left" ? "left" : "right");
+
+    if (payload.title) {
+      var title = doc.createElement("h3");
+      title.textContent = payload.title;
+      panel.appendChild(title);
+    }
+
+    var message = doc.createElement("p");
+    message.textContent = payload.message;
+    panel.appendChild(message);
+
+    if (payload.ctaLabel && payload.ctaUrl) {
+      var link = doc.createElement("a");
+      link.href = payload.ctaUrl;
+      link.textContent = payload.ctaLabel;
+      panel.appendChild(link);
+    }
+
+    var close = doc.createElement("button");
+    close.textContent = "×";
+    close.setAttribute("aria-label", "Close");
+    close.onclick = function () {
+      panel.parentNode.removeChild(panel);
+    };
+    panel.appendChild(close);
+
+    doc.body.appendChild(panel);
+  }
+
   function performRedirect(win, payload) {
     var delay = payload.delayMs || 0;
     win.setTimeout(function () {
@@ -152,6 +191,8 @@
         return renderCustomHtml(doc, action.payload);
       case "redirect":
         return performRedirect(win, action.payload);
+      case "sidebar":
+        return renderSidebar(doc, action.payload);
       default:
         return undefined;
     }
@@ -210,6 +251,7 @@
     renderBanner: renderBanner,
     renderModal: renderModal,
     renderCustomHtml: renderCustomHtml,
+    renderSidebar: renderSidebar,
     performRedirect: performRedirect,
     init: init
   };
