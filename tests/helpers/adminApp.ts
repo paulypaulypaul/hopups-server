@@ -1,9 +1,12 @@
 import Fastify, { type FastifyInstance } from "fastify";
+import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
 import { registerAdminRoutes } from "../../src/api/admin/index.js";
 import { config } from "../../src/config.js";
 
 export async function buildAdminTestApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
   await app.register(registerAdminRoutes);
   await app.ready();
   return app;

@@ -1,8 +1,21 @@
 import jwt from "jsonwebtoken";
+import { z } from "zod";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { config } from "../../config.js";
+import { errorResponseSchema } from "../shared-schemas.js";
 
 const TOKEN_TTL_SECONDS = 24 * 60 * 60;
+
+export const loginRequestSchema = z.object({
+  username: z.string(),
+  password: z.string()
+});
+
+export const loginResponseSchema = z.object({
+  token: z.string(),
+  expiresAt: z.string()
+});
 
 export function issueToken(username: string): { token: string; expiresAt: string } {
   const token = jwt.sign({ sub: username }, config.jwtSecret, { expiresIn: TOKEN_TTL_SECONDS });
@@ -25,14 +38,27 @@ export async function requireAdminAuth(request: FastifyRequest, reply: FastifyRe
 }
 
 export function registerLoginRoute(app: FastifyInstance): void {
-  app.post("/api/admin/login", async (request, reply) => {
-    const body = request.body as { username?: string; password?: string } | undefined;
+  const typedApp = app.withTypeProvider<ZodTypeProvider>();
 
-    if (body?.username === config.adminUsername && body?.password === config.adminPassword) {
-      const { token, expiresAt } = issueToken(body.username);
-      return reply.send({ token, expiresAt });
+  typedApp.post(
+    "/api/admin/login",
+    {
+      schema: {
+        tags: ["admin"],
+        summary: "Log in as the global admin",
+        body: loginRequestSchema,
+        response: { 200: loginResponseSchema, 401: errorResponseSchema }
+      }
+    },
+    async (request, reply) => {
+      const { username, password } = request.body;
+
+      if (username === config.adminUsername && password === config.adminPassword) {
+        const { token, expiresAt } = issueToken(username);
+        return reply.send({ token, expiresAt });
+      }
+
+      return reply.status(401).send({ error: "Invalid credentials" });
     }
-
-    return reply.status(401).send({ error: "Invalid credentials" });
-  });
+  );
 }
