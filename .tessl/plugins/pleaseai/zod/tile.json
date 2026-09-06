@@ -1,0 +1,11 @@
+{
+  "name": "pleaseai/zod",
+  "version": "1.3.0",
+  "summary": "TypeScript-first schema validation with static type inference - version-aware skill for Zod v3 and v4",
+  "skills": {
+    "use-zod": {
+      "path": "skills/use-zod/SKILL.md"
+    }
+  },
+  "private": false
+}

@@ -1,0 +1,49 @@
+{
+  "instruction": "Build a production-ready Fastify microservice with security and operational concerns",
+  "relevant_when": "Agent builds a Fastify service intended for production deployment",
+  "context": "Proactively check that the agent applies production hardening patterns: CORS with explicit origins, helmet for security headers, rate limiting, structured pino logging, and graceful shutdown with signal handling and onClose hooks for cleanup.",
+  "sources": [
+    {
+      "type": "file",
+      "filename": "skills/fastify-best-practices/SKILL.md",
+      "tile": "tessl-labs/fastify-best-practices"
+    }
+  ],
+  "checklist": [
+    {
+      "name": "cors-registered",
+      "rule": "Agent registers @fastify/cors with explicit origin configuration, not just cors() with no options (which allows all origins)",
+      "relevant_when": "Agent sets up a Fastify server that serves API requests"
+    },
+    {
+      "name": "helmet-registered",
+      "rule": "Agent registers @fastify/helmet for security headers (Content-Security-Policy, X-Frame-Options, etc.)",
+      "relevant_when": "Agent sets up a Fastify server for production"
+    },
+    {
+      "name": "rate-limit-registered",
+      "rule": "Agent registers @fastify/rate-limit with a max requests and time window configuration to prevent abuse",
+      "relevant_when": "Agent sets up a Fastify server that accepts external requests"
+    },
+    {
+      "name": "pino-logger-enabled",
+      "rule": "Fastify is instantiated with logger: true or a pino logger configuration object. The agent uses request.log and app.log throughout, never console.log",
+      "relevant_when": "Agent creates a Fastify instance"
+    },
+    {
+      "name": "graceful-shutdown-signals",
+      "rule": "Agent handles SIGINT and/or SIGTERM process signals by calling app.close() to drain in-flight requests and run cleanup hooks",
+      "relevant_when": "Agent sets up a Fastify server"
+    },
+    {
+      "name": "onclose-cleanup-hooks",
+      "rule": "Agent registers onClose hooks to clean up resources (database connections, cache clients, etc.) that are closed when app.close() is called",
+      "relevant_when": "Agent registers database or cache connections with Fastify"
+    },
+    {
+      "name": "listen-with-host",
+      "rule": "Agent calls app.listen() with host: '0.0.0.0' for containerized/production deployments, not just a port number",
+      "relevant_when": "Agent starts a Fastify server intended for production or Docker"
+    }
+  ]
+}

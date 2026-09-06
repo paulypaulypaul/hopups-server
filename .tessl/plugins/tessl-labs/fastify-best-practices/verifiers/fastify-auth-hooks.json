@@ -1,0 +1,44 @@
+{
+  "instruction": "Build authentication middleware using Fastify hooks and decorators",
+  "relevant_when": "Agent builds authentication or authorization in a Fastify application",
+  "context": "Proactively check that the agent uses Fastify hooks and decorators correctly for auth: decorateRequest for per-request user state, preHandler hook for auth checks, proper TypeScript declarations, and plugin encapsulation so auth hooks are scoped correctly.",
+  "sources": [
+    {
+      "type": "file",
+      "filename": "skills/fastify-best-practices/SKILL.md",
+      "tile": "tessl-labs/fastify-best-practices"
+    }
+  ],
+  "checklist": [
+    {
+      "name": "decorate-request-for-user",
+      "rule": "Agent uses app.decorateRequest() to add a user property to the request object, initialized to null, instead of assigning arbitrary properties to the request",
+      "relevant_when": "Agent adds user/auth state to Fastify requests"
+    },
+    {
+      "name": "prehandler-for-auth",
+      "rule": "Agent uses a preHandler hook (not onRequest) for authentication/authorization checks, since preHandler runs after body parsing and schema validation",
+      "relevant_when": "Agent implements auth checks on Fastify routes"
+    },
+    {
+      "name": "typescript-module-augmentation",
+      "rule": "Agent extends the Fastify types using declare module 'fastify' with FastifyRequest interface augmentation to type the user property",
+      "relevant_when": "Agent adds custom properties to Fastify request in TypeScript"
+    },
+    {
+      "name": "auth-plugin-encapsulated",
+      "rule": "Auth logic is organized as a Fastify plugin. If the auth decorator needs to be shared across all plugins, the plugin is wrapped with fastify-plugin (fp) to break encapsulation intentionally",
+      "relevant_when": "Agent builds auth that needs to be available across multiple route plugins"
+    },
+    {
+      "name": "401-on-missing-auth",
+      "rule": "The auth hook sends a 401 status with a structured error response when authentication fails, using reply.send() and returning reply (or throwing) to short-circuit the request",
+      "relevant_when": "Agent implements auth middleware in Fastify"
+    },
+    {
+      "name": "request-log-for-auth-failures",
+      "rule": "Auth failures are logged using request.log (Fastify's built-in pino logger) rather than console.log",
+      "relevant_when": "Agent logs authentication events in Fastify"
+    }
+  ]
+}

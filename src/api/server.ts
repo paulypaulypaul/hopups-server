@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
+import { prisma } from "../db/prisma.js";
 import { registerIdentityProvider, FacebookIdentityProvider } from "../domain/identity/index.js";
 import { registerSyncRoutes } from "./sync/route.js";
 import { registerAdminRoutes } from "./admin/index.js";
@@ -46,6 +47,10 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(registerSyncRoutes);
   await app.register(registerAdminRoutes);
   await app.register(registerWidgetRoutes);
+
+  app.addHook("onClose", async () => {
+    await prisma.$disconnect();
+  });
 
   return app;
 }

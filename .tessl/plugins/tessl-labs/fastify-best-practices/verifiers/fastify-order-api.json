@@ -1,0 +1,54 @@
+{
+  "instruction": "Build a CRUD order API with Fastify following best practices",
+  "relevant_when": "Agent builds a Fastify API with CRUD routes",
+  "context": "Proactively check that the agent applies Fastify best practices when building a CRUD API: JSON Schema validation on all routes, plugin-based route organization, structured error handling, and response schema for fast serialization and data leak prevention.",
+  "sources": [
+    {
+      "type": "file",
+      "filename": "skills/fastify-best-practices/SKILL.md",
+      "tile": "tessl-labs/fastify-best-practices"
+    }
+  ],
+  "checklist": [
+    {
+      "name": "body-schema-on-write-routes",
+      "rule": "POST and PUT/PATCH routes define a JSON Schema for the request body with required fields, type constraints, and additionalProperties: false",
+      "relevant_when": "Agent creates Fastify routes that accept request bodies"
+    },
+    {
+      "name": "params-schema-on-routes",
+      "rule": "Routes with URL parameters (e.g., :id) define a params schema with type constraints",
+      "relevant_when": "Agent creates Fastify routes with URL parameters"
+    },
+    {
+      "name": "response-schema-defined",
+      "rule": "Routes define response schemas for success status codes to enable fast serialization and prevent accidental data leaks",
+      "relevant_when": "Agent creates Fastify route handlers"
+    },
+    {
+      "name": "additional-properties-false",
+      "rule": "Object schemas use additionalProperties: false to reject unexpected fields and prevent mass assignment",
+      "relevant_when": "Agent defines JSON Schema objects for Fastify routes"
+    },
+    {
+      "name": "routes-in-plugin",
+      "rule": "Routes are organized inside a Fastify plugin function registered with app.register(), not defined directly on the root app instance",
+      "relevant_when": "Agent structures a Fastify application with multiple routes"
+    },
+    {
+      "name": "custom-error-handler",
+      "rule": "A custom error handler is set via app.setErrorHandler() that returns structured error responses with code and message fields, handling validation errors separately from application errors",
+      "relevant_when": "Agent sets up a Fastify application"
+    },
+    {
+      "name": "not-found-handling",
+      "rule": "When a resource is not found, the route throws a proper error (e.g., via @fastify/error) with a 404 status code rather than returning null or an empty response",
+      "relevant_when": "Agent builds GET-by-ID or update/delete routes"
+    },
+    {
+      "name": "async-return-pattern",
+      "rule": "Async handlers either return the response value (preferred) or use reply.send() but never mix both patterns in the same handler",
+      "relevant_when": "Agent writes Fastify route handlers"
+    }
+  ]
+}

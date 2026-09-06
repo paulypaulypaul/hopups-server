@@ -99,6 +99,8 @@ model Hopup {
   actions Action[]
   actionEvents  ActionEvent[]
   rollupBuckets RollupBucket[]
+
+  @@index([siteId, active])
 }
 
 model Action {
