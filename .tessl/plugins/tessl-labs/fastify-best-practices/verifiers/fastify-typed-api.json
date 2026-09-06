@@ -1,0 +1,44 @@
+{
+  "instruction": "Build a TypeScript Fastify API with type providers and proper async patterns",
+  "relevant_when": "Agent builds a Fastify API with TypeScript",
+  "context": "Proactively check that the agent uses Fastify's TypeScript features correctly: type providers for schema-to-type inference, as const on schemas, proper async handler patterns (return vs reply.send), and correct module augmentation for decorators.",
+  "sources": [
+    {
+      "type": "file",
+      "filename": "skills/fastify-best-practices/SKILL.md",
+      "tile": "tessl-labs/fastify-best-practices"
+    }
+  ],
+  "checklist": [
+    {
+      "name": "type-provider-configured",
+      "rule": "Agent configures a Fastify type provider (JsonSchemaToTsProvider or TypeBoxTypeProvider) using app.withTypeProvider() so schemas automatically infer request/response types",
+      "relevant_when": "Agent creates a Fastify app with TypeScript"
+    },
+    {
+      "name": "as-const-on-schemas",
+      "rule": "JSON Schema objects use 'as const' assertion so TypeScript can infer literal types from the schema definition",
+      "relevant_when": "Agent defines JSON Schema for Fastify routes in TypeScript"
+    },
+    {
+      "name": "no-type-casting-request",
+      "rule": "Agent does not cast request.body, request.params, or request.query with 'as any' or manual type assertions -- types should flow from the schema via the type provider",
+      "relevant_when": "Agent accesses request properties in typed Fastify handlers"
+    },
+    {
+      "name": "async-handlers-correct",
+      "rule": "Async route handlers either return a value (preferred) or call reply.send() but never do both. No fire-and-forget promises without await inside handlers",
+      "relevant_when": "Agent writes Fastify route handlers"
+    },
+    {
+      "name": "fastify-module-declarations",
+      "rule": "Custom decorators on FastifyInstance or FastifyRequest are typed via 'declare module fastify' interface augmentation",
+      "relevant_when": "Agent adds decorators to Fastify in TypeScript"
+    },
+    {
+      "name": "plugin-typed-correctly",
+      "rule": "Plugins use the FastifyPluginAsync type (or FastifyPluginCallback) from the fastify package for their function signature",
+      "relevant_when": "Agent writes Fastify plugins in TypeScript"
+    }
+  ]
+}

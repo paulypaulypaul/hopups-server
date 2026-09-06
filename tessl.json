@@ -4,6 +4,15 @@
   "dependencies": {
     "tessl-labs/spec-driven-development": {
       "version": "2.0.1"
+    },
+    "tessl-labs/fastify-best-practices": {
+      "version": "0.2.0"
+    },
+    "pleaseai/zod": {
+      "version": "1.3.0"
+    },
+    "jbvc/prisma-expert": {
+      "version": "0.1.0"
     }
   },
   "agents": [

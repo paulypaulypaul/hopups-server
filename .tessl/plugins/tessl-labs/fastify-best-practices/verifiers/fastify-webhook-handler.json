@@ -1,0 +1,44 @@
+{
+  "instruction": "Build a webhook ingestion service with Fastify following best practices",
+  "relevant_when": "Agent builds a Fastify endpoint that receives webhooks or external event payloads",
+  "context": "Proactively check that the agent applies Fastify best practices when building a webhook handler: strict JSON Schema validation on incoming payloads, plugin encapsulation for the webhook routes, structured error responses, and proper logging of received events.",
+  "sources": [
+    {
+      "type": "file",
+      "filename": "skills/fastify-best-practices/SKILL.md",
+      "tile": "tessl-labs/fastify-best-practices"
+    }
+  ],
+  "checklist": [
+    {
+      "name": "strict-body-schema",
+      "rule": "The webhook route defines a strict JSON Schema for the request body with required fields, type constraints, and additionalProperties: false to reject unexpected payloads",
+      "relevant_when": "Agent creates a Fastify route that receives webhook payloads"
+    },
+    {
+      "name": "webhook-plugin-encapsulated",
+      "rule": "Webhook routes are encapsulated in a Fastify plugin registered with app.register(), not defined on the root app",
+      "relevant_when": "Agent structures webhook handling code in Fastify"
+    },
+    {
+      "name": "structured-error-response",
+      "rule": "Invalid webhook payloads receive a structured error response (not just a generic 400) with a code field and descriptive message so the sender can debug",
+      "relevant_when": "Agent handles webhook validation failures"
+    },
+    {
+      "name": "event-logging",
+      "rule": "Received webhook events are logged using request.log with structured context (event type, source, outcome) rather than console.log",
+      "relevant_when": "Agent processes incoming webhook events"
+    },
+    {
+      "name": "idempotent-handling",
+      "rule": "Agent considers idempotency for webhook processing -- checking for duplicate event IDs or using an idempotency key to prevent reprocessing",
+      "relevant_when": "Agent builds a webhook handler that triggers side effects"
+    },
+    {
+      "name": "error-handler-set",
+      "rule": "A custom error handler (app.setErrorHandler) is configured to return structured error responses, with validation errors handled distinctly from server errors",
+      "relevant_when": "Agent sets up a Fastify application for webhook ingestion"
+    }
+  ]
+}

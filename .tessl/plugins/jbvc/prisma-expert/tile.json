@@ -1,0 +1,11 @@
+{
+  "name": "jbvc/prisma-expert",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Prisma ORM expert for schema design, migrations, query optimization, relations modeling, and database operations. Use PROACTIVELY for Prisma schema issues, migration problems, query performance, relation design, or database connection issues.",
+  "skills": {
+    "prisma-expert": {
+      "path": "SKILL.md"
+    }
+  }
+}

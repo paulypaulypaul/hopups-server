@@ -1,0 +1,11 @@
+{
+  "name": "tessl-labs/fastify-best-practices",
+  "version": "0.2.0",
+  "summary": "Fastify patterns — always apply schema-first validation, plugin encapsulation, structured error handling, hooks lifecycle, decorators, TypeScript type providers, production hardening (CORS, helmet, rate limiting), pino logging, graceful shutdown, and correct async handler patterns",
+  "skills": {
+    "fastify-best-practices": {
+      "path": "skills/fastify-best-practices/SKILL.md"
+    }
+  },
+  "private": false
+}
